@@ -1,28 +1,41 @@
 package ar.edu.itba.pod.hazelcast.client;
 
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.concurrent.TimeUnit;
+import com.hazelcast.client.HazelcastClient;
+import com.hazelcast.client.config.ClientConfig;
+import com.hazelcast.client.config.ClientNetworkConfig;
+import com.hazelcast.config.GroupConfig;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IMap;
 
 public class Client {
-    private static Logger logger = LoggerFactory.getLogger(Client.class);
 
+    public static void main(String[] args) {
 
-    public static void main(String[] args) throws InterruptedException {
+        // Client Config
+        ClientConfig clientConfig = new ClientConfig();
 
-        logger.info("tpe2-g4-parent Client Starting ...");
-        logger.info("grpc-com-patterns Client Starting ...");
-        ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 50051)
-                .usePlaintext()
-                .build();
+        // Group Config
+        GroupConfig groupConfig = new GroupConfig()
+                .setName("g4").setPassword("g4-pass");
+        clientConfig.setGroupConfig(groupConfig);
 
-        try {
+        // Client Network Config
+        ClientNetworkConfig clientNetworkConfig = new ClientNetworkConfig();
+        String[] addresses = {"172.20.10.5:5701"};
+        clientNetworkConfig.addAddress(addresses);
+        clientConfig.setNetworkConfig(clientNetworkConfig);
 
-        } finally {
-            channel.shutdown().awaitTermination(10, TimeUnit.SECONDS);
-        }
+        HazelcastInstance hazelcastInstance = HazelcastClient.newHazelcastClient(clientConfig);
+
+        String mapName = "testMap";
+
+        IMap<Integer, String> testMapFromMember = hazelcastInstance.getMap(mapName);
+        testMapFromMember.set(1, "test1");
+
+        IMap<Integer, String> testMap = hazelcastInstance.getMap(mapName);
+        System.out.println(testMap.get(1));
+
+        // Shutdown
+        HazelcastClient.shutdownAll();
     }
 }
