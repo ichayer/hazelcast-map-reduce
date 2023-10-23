@@ -1,13 +1,8 @@
 package ar.edu.itba.pod.hazelcast.client.utils;
 
 
-import ar.edu.itba.pod.hazelcast.api.models.Coordinates;
-import ar.edu.itba.pod.hazelcast.api.models.Station;
 import ar.edu.itba.pod.hazelcast.client.exceptions.IOClientFileError;
 import ar.edu.itba.pod.hazelcast.client.exceptions.IllegalClientArgumentException;
-import com.hazelcast.core.IMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.*;
@@ -16,23 +11,26 @@ public class CsvFileIterator implements Iterator<String[]>, Closeable {
 
     private final BufferedReader reader;
     private String currentLine;
-
-    private static Logger logger = LoggerFactory.getLogger(CsvFileIterator.class);
+    private final long columns;
 
     public CsvFileIterator(String filename) {
         if (filename == null) {
             throw new IllegalArgumentException("The filename cannot be null");
         }
-
         try {
             reader = new BufferedReader(new FileReader(filename));
-            reader.readLine(); // Skip header
+            String header = reader.readLine(); // Skip header
+            this.columns = header.chars().filter(ch -> ch == ';').count()+1;
             currentLine = reader.readLine();
         } catch (FileNotFoundException e) {
             throw new IllegalClientArgumentException("The file " + filename + " was not found", e.getCause());
         } catch (IOException e) {
             throw new IOClientFileError(e.getMessage(), e.getCause());
         }
+    }
+
+    public long getColumns() {
+        return columns;
     }
 
     @Override
@@ -53,7 +51,6 @@ public class CsvFileIterator implements Iterator<String[]>, Closeable {
         } catch (IOException e) {
             throw new IOClientFileError(e.getMessage(), e.getCause());
         }
-
         return fields;
     }
 
@@ -71,39 +68,5 @@ public class CsvFileIterator implements Iterator<String[]>, Closeable {
                 throw new IOClientFileError(e.getMessage(), e.getCause());
             }
         }
-    }
-
-    public static void ParseStationsCsv(String inPath, IMap<Integer, Station> stationMap){
-        CsvFileIterator fileIterator = new CsvFileIterator(inPath + Constants.STATIONS_CSV);
-        while (fileIterator.hasNext()) {
-            String[] fields = fileIterator.next();
-            if (fields.length == 4) {
-                int stationPk = Integer.parseInt(fields[0]);
-                double latitude = Double.parseDouble(fields[2]);
-                double longitude = Double.parseDouble(fields[3]);
-                stationMap.put(stationPk, new Station(stationPk, fields[1], new Coordinates(latitude, longitude)));
-            }
-            else {
-                logger.error(String.format("Invalid line format, expected 4 fileds but got %d \n",fields.length));
-            }
-        }
-        fileIterator.close();
-    }
-
-    public static void ParseBikesCsv(String inPath, IMap<Integer, Map.Entry<Integer, Integer>> tripsMap){
-        CsvFileIterator fileIterator = new CsvFileIterator(inPath + Constants.BIKES_CSV);
-        int id = 0;
-        while (fileIterator.hasNext()) {
-            String[] fields = fileIterator.next();
-            if (fields.length == 5) {
-                int startStation = Integer.parseInt(fields[1]);
-                int endStation = Integer.parseInt(fields[3]);
-                tripsMap.put(++id, new AbstractMap.SimpleEntry<>(startStation, endStation));
-            }
-            else {
-                logger.error(String.format("Invalid line format, expected 5 fileds but got %d \n",fields.length));
-            }
-        }
-        fileIterator.close();
     }
 }
