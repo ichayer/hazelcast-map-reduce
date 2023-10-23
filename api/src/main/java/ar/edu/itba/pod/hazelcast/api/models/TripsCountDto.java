@@ -7,7 +7,7 @@ import com.hazelcast.nio.serialization.DataSerializable;
 import java.io.IOException;
 import java.util.Objects;
 
-public class TripsCountDto implements Comparable<TripsCountDto>, DataSerializable {
+public class TripsCountDto implements Comparable<TripsCountDto>, DataSerializable, Dto {
 
     private String stationFrom;
     private String stationTo;
@@ -67,5 +67,10 @@ public class TripsCountDto implements Comparable<TripsCountDto>, DataSerializabl
                 ", stationTo='" + stationTo + '\'' +
                 ", count=" + count +
                 '}';
+    }
+
+    @Override
+    public String toCsv() {
+        return stationFrom + ";" + stationTo + ";" + count;
     }
 }

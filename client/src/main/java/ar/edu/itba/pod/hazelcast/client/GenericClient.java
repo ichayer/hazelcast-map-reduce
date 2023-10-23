@@ -48,7 +48,7 @@ public abstract class GenericClient {
             String finishLoadingTimestamp = LocalDateTime.now().toString();
 
             String startRunningQueryTimestamp = LocalDateTime.now().toString();
-            runClient(hz);
+            runClient(arguments,hz);
             String stopRunningQueryTimestamp = LocalDateTime.now().toString();
 
         } catch (ClientException e) {
@@ -62,5 +62,5 @@ public abstract class GenericClient {
 
     public abstract void loadData(Arguments args, HazelcastInstance hz);
 
-    public abstract void runClient(HazelcastInstance hz);
+    public abstract void runClient(Arguments args,HazelcastInstance hz);
 }
