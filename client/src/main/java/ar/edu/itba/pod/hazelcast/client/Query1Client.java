@@ -19,35 +19,39 @@ import java.util.Map;
 import java.util.TreeSet;
 
 
-public class Query1Client {
+public class Query1Client extends GenericClient {
 
     public static void main(String[] args) {
-        GenericClient g = new GenericClient();
+        GenericClient client = new Query1Client();
+        client.run(args);
+    }
 
-        g.run(args, (Arguments arguments, HazelcastInstance hz) -> {
+    @Override
+    public void loadData(Arguments args, HazelcastInstance hz) {
+        CsvFileIterator.ParseStationsCsv(args.getInPath(), hz.getMap(Constants.STATIONS_MAP));
+        CsvFileIterator.ParseBikesCsv(args.getInPath(), hz.getMap(Constants.BIKES_MAP));
+    }
 
-            CsvFileIterator.ParseStationsCsv(arguments.getInPath(), hz.getMap(Constants.STATIONS_MAP));
-            CsvFileIterator.ParseBikesCsv(arguments.getInPath(), hz.getMap(Constants.BIKES_MAP));
+    @Override
+    public void runClient(HazelcastInstance hz) {
+        final JobTracker jt = hz.getJobTracker("travel-count");
+        final IMap<Integer, Map.Entry<Integer, Integer>> list = hz.getMap(Constants.BIKES_MAP);
+        final KeyValueSource<Integer, Map.Entry<Integer, Integer>> source = KeyValueSource.fromMap(list);
+        final Job<Integer, Map.Entry<Integer, Integer>> job = jt.newJob(source);
 
-            final JobTracker jt = hz.getJobTracker("travel-count");
-            final IMap<Integer, Map.Entry<Integer, Integer>> list = hz.getMap(Constants.BIKES_MAP);
-            final KeyValueSource<Integer, Map.Entry<Integer, Integer>> source = KeyValueSource.fromMap(list);
-            final Job<Integer, Map.Entry<Integer, Integer>> job = jt.newJob(source);
+        TripsCountSubmitter t = new TripsCountSubmitter();
+        t.setHazelcastInstance(hz);
 
-            TripsCountSubmitter t = new TripsCountSubmitter();
-            t.setHazelcastInstance(hz);
+        final ICompletableFuture<TreeSet<TripsCountDto>> future = job
+                .mapper(new TripsCountMapper())
+                .reducer(new TripsCountReducerFactory())
+                .submit(t);
 
-            final ICompletableFuture<TreeSet<TripsCountDto>> future = job
-                    .mapper(new TripsCountMapper())
-                    .reducer(new TripsCountReducerFactory())
-                    .submit(t);
-
-            try {
-                final TreeSet<TripsCountDto> result = future.get();
-                result.forEach(System.out::println);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
+        try {
+            final TreeSet<TripsCountDto> result = future.get();
+            result.forEach(System.out::println);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

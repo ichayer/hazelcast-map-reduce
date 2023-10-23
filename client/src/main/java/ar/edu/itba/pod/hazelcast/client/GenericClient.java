@@ -11,14 +11,15 @@ import com.hazelcast.core.HazelcastInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalDateTime;
 import java.util.function.BiConsumer;
 
 
-public class GenericClient {
+public abstract class GenericClient {
 
     private static Logger logger = LoggerFactory.getLogger(GenericClient.class);
 
-    public void run(String[] args, BiConsumer<Arguments, HazelcastInstance> action) {
+    public void run(String[] args) {
 
         logger.info("Setting up client");
         try {
@@ -42,7 +43,13 @@ public class GenericClient {
             // Hazelcast Instance
             final HazelcastInstance hz = HazelcastClient.newHazelcastClient(clientConfig);
 
-            action.accept(arguments, hz);
+            String startLoadingTimestamp = LocalDateTime.now().toString();
+            loadData(arguments, hz);
+            String finishLoadingTimestamp = LocalDateTime.now().toString();
+
+            String startRunningQueryTimestamp = LocalDateTime.now().toString();
+            runClient(hz);
+            String stopRunningQueryTimestamp = LocalDateTime.now().toString();
 
         } catch (ClientException e) {
             System.out.println("Client error: " + e.getMessage());
@@ -52,4 +59,8 @@ public class GenericClient {
             HazelcastClient.shutdownAll();
         }
     }
+
+    public abstract void loadData(Arguments args, HazelcastInstance hz);
+
+    public abstract void runClient(HazelcastInstance hz);
 }
