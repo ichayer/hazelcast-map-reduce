@@ -13,7 +13,6 @@ public class CsvHelper {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) {
             writer.write(header);
             writer.newLine();
-
             collection.forEach((t) -> {
                 try {
                     writer.write(t.toCsv());
@@ -26,5 +25,4 @@ public class CsvHelper {
             throw new IOClientFileError("Error while writing output data to file " + filename,e);
         }
     }
-
 }

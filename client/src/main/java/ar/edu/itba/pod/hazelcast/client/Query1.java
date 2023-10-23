@@ -14,18 +14,23 @@ import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.TreeSet;
 
 
-public class Query1Client extends GenericClient {
+public class Query1 extends GenericClient {
 
-    private final String QUERY_RESULT = "/query1.cvs";
+    private static final String QUERY_RESULT = "/query1.csv";
+    private static final String OUTPUT_TXT_NAME = "/time1.txt";
+    private static final String OUTPUT_CSV_HEADER = "station_a;station_b;trips_between_a_b";
+    private static final Logger logger = LoggerFactory.getLogger(Query1.class);
 
     public static void main(String[] args) {
-        GenericClient client = new Query1Client();
-        client.run(args);
+        GenericClient client = new Query1();
+        client.run(args, OUTPUT_TXT_NAME);
     }
 
     @Override
@@ -51,10 +56,9 @@ public class Query1Client extends GenericClient {
 
         try {
             final TreeSet<TripsCountDto> result = future.get();
-            CsvHelper.printData(arguments.getOutPath() + QUERY_RESULT, "station_a;station_b;trips_between_a_b",result);
-            result.forEach(System.out::println);
+            CsvHelper.printData(arguments.getOutPath() + QUERY_RESULT, OUTPUT_CSV_HEADER, result);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error waiting for the computation to complete and retrieve its result in query 1");
         }
     }
 }

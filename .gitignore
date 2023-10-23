@@ -17,3 +17,4 @@ atlassian-ide-plugin.xml
 .vscode/
 
 *.csv
+*.txt

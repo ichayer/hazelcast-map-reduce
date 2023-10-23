@@ -11,15 +11,20 @@ import com.hazelcast.core.HazelcastInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.function.BiConsumer;
+import java.time.format.DateTimeFormatter;
 
 
 public abstract class GenericClient {
 
-    private static Logger logger = LoggerFactory.getLogger(GenericClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(GenericClient.class);
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss:SSSS");
 
-    public void run(String[] args) {
+    public void run(String[] args, String outputFileName) {
 
         logger.info("Setting up client");
         try {
@@ -43,16 +48,29 @@ public abstract class GenericClient {
             // Hazelcast Instance
             final HazelcastInstance hz = HazelcastClient.newHazelcastClient(clientConfig);
 
-            String startLoadingTimestamp = LocalDateTime.now().toString();
+            String startLoadingTimestamp = LocalDateTime.now().format(formatter) + " - Inicio de la lectura del archivo";
             loadData(arguments, hz);
-            String finishLoadingTimestamp = LocalDateTime.now().toString();
+            String finishLoadingTimestamp = LocalDateTime.now().format(formatter) + " - Fin de la lectura del archivo";
 
-            String startRunningQueryTimestamp = LocalDateTime.now().toString();
-            runClient(arguments,hz);
-            String stopRunningQueryTimestamp = LocalDateTime.now().toString();
+            String startRunningQueryTimestamp = LocalDateTime.now().format(formatter) + " - Inicio del trabajo map/reduce";
+            runClient(arguments, hz);
+            String stopRunningQueryTimestamp = LocalDateTime.now().format(formatter) + " - Fin del trabajo map/reduce";
 
+            String[] timestamps = new String[]{startLoadingTimestamp, finishLoadingTimestamp, startRunningQueryTimestamp, stopRunningQueryTimestamp};
+
+            File logFile = new File(arguments.getOutPath() + outputFileName);
+
+            BufferedWriter writer = new BufferedWriter(new FileWriter(logFile));
+            for (String timestamp : timestamps) {
+                writer.write(timestamp);
+                writer.newLine();
+            }
+            writer.close();
+            logger.info(outputFileName + " created successfully");
         } catch (ClientException e) {
             System.out.println("Client error: " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("Error writing " + outputFileName + ": " + e.getMessage() );
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         } finally {
