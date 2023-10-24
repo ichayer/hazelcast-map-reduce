@@ -19,9 +19,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 
-public abstract class GenericClient {
+public abstract class GenericQuery {
 
-    private static final Logger logger = LoggerFactory.getLogger(GenericClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(GenericQuery.class);
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss:SSSS");
 
     public void run(String[] args, String outputFileName) {

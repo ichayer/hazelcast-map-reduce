@@ -1,4 +1,4 @@
-package ar.edu.itba.pod.hazelcast.client;
+package ar.edu.itba.pod.hazelcast.client.query1;
 
 import ar.edu.itba.pod.hazelcast.api.mappers.TripsCountMapper;
 import ar.edu.itba.pod.hazelcast.api.models.Coordinates;
@@ -6,6 +6,7 @@ import ar.edu.itba.pod.hazelcast.api.models.Station;
 import ar.edu.itba.pod.hazelcast.api.models.TripsCountDto;
 import ar.edu.itba.pod.hazelcast.api.reducers.TripsCountReducerFactory;
 import ar.edu.itba.pod.hazelcast.api.submitters.TripsCountSubmitter;
+import ar.edu.itba.pod.hazelcast.client.GenericQuery;
 import ar.edu.itba.pod.hazelcast.client.utils.Arguments;
 import ar.edu.itba.pod.hazelcast.client.utils.Constants;
 import ar.edu.itba.pod.hazelcast.client.utils.CsvHelper;
@@ -23,7 +24,7 @@ import java.util.Map;
 import java.util.TreeSet;
 
 
-public class Query1 extends GenericClient {
+public class Query1 extends GenericQuery {
 
     private static final String QUERY_RESULT = "/query1.csv";
     private static final String OUTPUT_TXT_NAME = "/time1.txt";
@@ -31,7 +32,7 @@ public class Query1 extends GenericClient {
     private static final Logger logger = LoggerFactory.getLogger(Query1.class);
 
     public static void main(String[] args) {
-        GenericClient client = new Query1();
+        GenericQuery client = new Query1();
         client.run(args, OUTPUT_TXT_NAME);
     }
 
