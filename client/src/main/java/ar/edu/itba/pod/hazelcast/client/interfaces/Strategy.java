@@ -5,5 +5,6 @@ import com.hazelcast.core.HazelcastInstance;
 
 public interface Strategy {
     void loadData(Arguments args, HazelcastInstance hz);
+
     void runClient(Arguments arguments, HazelcastInstance hz);
 }

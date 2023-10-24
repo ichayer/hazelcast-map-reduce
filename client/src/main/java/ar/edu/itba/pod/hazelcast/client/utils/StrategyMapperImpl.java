@@ -9,19 +9,19 @@ import java.util.function.Supplier;
 
 public class StrategyMapperImpl implements StrategyMapper {
 
-    private final Map<String, Supplier<Strategy>> strategyMapper;
     public static final String DEFAULT_STRATEGY = "DEFAULT";
+    private final Map<String, Supplier<Strategy>> strategyMapper;
 
     public StrategyMapperImpl(Map<String, Supplier<Strategy>> strategyMapper) {
         this.strategyMapper = strategyMapper;
     }
 
+    private static Strategy InvalidAction() {
+        throw new IllegalClientArgumentException("The provided strategy is not valid");
+    }
+
     @Override
     public Strategy getStrategy(String strategy) {
         return strategyMapper.getOrDefault(strategy, StrategyMapperImpl::InvalidAction).get();
-    }
-
-    private static Strategy InvalidAction() {
-        throw new IllegalClientArgumentException("The provided strategy is not valid");
     }
 }

@@ -52,7 +52,7 @@ public abstract class GenericQuery {
             final HazelcastInstance hz = HazelcastClient.newHazelcastClient(clientConfig);
 
             String startLoadingTimestamp = LocalDateTime.now().format(formatter) + " - Inicio de la lectura del archivo";
-           strategy.loadData(arguments, hz);
+            strategy.loadData(arguments, hz);
             String finishLoadingTimestamp = LocalDateTime.now().format(formatter) + " - Fin de la lectura del archivo";
 
             String startRunningQueryTimestamp = LocalDateTime.now().format(formatter) + " - Inicio del trabajo map/reduce";
@@ -73,7 +73,7 @@ public abstract class GenericQuery {
         } catch (ClientException e) {
             System.out.println("Client error: " + e.getMessage());
         } catch (IOException e) {
-            System.out.println("Error writing " + outputFileName + ": " + e.getMessage() );
+            System.out.println("Error writing " + outputFileName + ": " + e.getMessage());
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());
         } finally {

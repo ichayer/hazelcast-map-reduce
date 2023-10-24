@@ -27,7 +27,6 @@ import java.util.TreeSet;
 public class Query1Default implements Strategy {
 
     private static final String QUERY_RESULT = "/query1.csv";
-
     private static final String OUTPUT_CSV_HEADER = "station_a;station_b;trips_between_a_b";
     private static final Logger logger = LoggerFactory.getLogger(Query1.class);
 
@@ -35,14 +34,14 @@ public class Query1Default implements Strategy {
     public void loadData(Arguments args, HazelcastInstance hz) {
         IMap<Integer, Station> stationMap = hz.getMap(Constants.STATIONS_MAP);
         IMap<Integer, Map.Entry<Integer, Integer>> tripsMap = hz.getMap(Constants.BIKES_MAP);
-        CsvHelper.ReadData(args.getInPath() + Constants.STATIONS_CSV, (fields, id)->{
+        CsvHelper.ReadData(args.getInPath() + Constants.STATIONS_CSV, (fields, id) -> {
             int stationPk = Integer.parseInt(fields[0]);
             double latitude = Double.parseDouble(fields[2]);
             double longitude = Double.parseDouble(fields[3]);
             stationMap.put(stationPk, new Station(stationPk, fields[1], new Coordinates(latitude, longitude)));
         });
 
-        CsvHelper.ReadData(args.getInPath()+ Constants.BIKES_CSV, (fields, id)-> {
+        CsvHelper.ReadData(args.getInPath() + Constants.BIKES_CSV, (fields, id) -> {
             int startStation = Integer.parseInt(fields[1]);
             int endStation = Integer.parseInt(fields[3]);
             tripsMap.put(id, new AbstractMap.SimpleEntry<>(startStation, endStation));

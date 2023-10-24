@@ -1,14 +1,13 @@
 package ar.edu.itba.pod.hazelcast.client.utils;
 
 import ar.edu.itba.pod.hazelcast.client.exceptions.IllegalClientArgumentException;
-import org.checkerframework.checker.units.qual.A;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.function.BiConsumer;
+
 public class Parser {
     private static final Map<String, BiConsumer<String, Arguments.Builder>> OPTIONS = Map.ofEntries(
-            Map.entry("-Daddresses", (argValue, argBuilder) ->  argBuilder.addresses(argValue.substring(1, argValue.length() - 1).split(";"))),
+            Map.entry("-Daddresses", (argValue, argBuilder) -> argBuilder.addresses(argValue.substring(1, argValue.length() - 1).split(";"))),
             Map.entry("-DinPath", (argValue, argBuilder) -> argBuilder.inPath(argValue)),
             Map.entry("-DoutPath", (argValue, argBuilder) -> argBuilder.outPath(argValue)),
             Map.entry("-Dn", (argValue, argBuilder) -> argBuilder.limit(Integer.parseInt(argValue))),

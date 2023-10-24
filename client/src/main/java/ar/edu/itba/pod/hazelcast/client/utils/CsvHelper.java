@@ -5,7 +5,9 @@ import ar.edu.itba.pod.hazelcast.client.exceptions.IOClientFileError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.function.BiConsumer;
 
@@ -13,7 +15,7 @@ public class CsvHelper {
 
     private static final Logger logger = LoggerFactory.getLogger(CsvHelper.class);
 
-    public static <T extends Dto> void printData(String filename, String header, Collection<T> collection){
+    public static <T extends Dto> void printData(String filename, String header, Collection<T> collection) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) {
             writer.write(header);
             writer.newLine();
@@ -22,15 +24,15 @@ public class CsvHelper {
                     writer.write(t.toCsv());
                     writer.newLine();
                 } catch (IOException e) {
-                    throw new IOClientFileError("Error while writing output data to file " + filename,e);
+                    throw new IOClientFileError("Error while writing output data to file " + filename, e);
                 }
             });
         } catch (IOException e) {
-            throw new IOClientFileError("Error while writing output data to file " + filename,e);
+            throw new IOClientFileError("Error while writing output data to file " + filename, e);
         }
     }
 
-    public static void ReadData(String file, BiConsumer<String[], Integer> consumer){
+    public static void ReadData(String file, BiConsumer<String[], Integer> consumer) {
         CsvFileIterator fileIterator = new CsvFileIterator(file);
         int id = 0;
         while (fileIterator.hasNext()) {
@@ -38,8 +40,7 @@ public class CsvHelper {
             if (fields.length == fileIterator.getColumns()) {
                 ++id;
                 consumer.accept(fields, id);
-            }
-            else {
+            } else {
                 logger.error(String.format("Invalid line format, expected %d fileds but got %d \n", fileIterator.getColumns(), fields.length));
             }
         }

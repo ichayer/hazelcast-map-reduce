@@ -1,10 +1,8 @@
 package ar.edu.itba.pod.hazelcast.client.utils;
 
 import ar.edu.itba.pod.hazelcast.client.exceptions.IllegalClientArgumentException;
-import ar.edu.itba.pod.hazelcast.client.interfaces.StrategyMapper;
 
 import java.util.Arrays;
-import java.util.List;
 
 public class Arguments {
     private final String[] addresses;
@@ -13,14 +11,13 @@ public class Arguments {
     private final Integer limit;
     private final String strategy;
 
-
     private Arguments(Builder builder) {
         this.addresses = builder.addresses;
         this.inPath = builder.inPath;
         this.outPath = builder.outPath;
         this.limit = builder.limit;
 
-        if(builder.strategy == null || builder.strategy.isEmpty()){
+        if (builder.strategy == null || builder.strategy.isEmpty()) {
             this.strategy = StrategyMapperImpl.DEFAULT_STRATEGY;
         } else {
             this.strategy = builder.strategy;
@@ -66,7 +63,6 @@ public class Arguments {
         private String inPath;
         private String outPath;
         private Integer limit;
-
         private String strategy;
 
         public Builder addresses(String[] addresses) {
@@ -97,9 +93,5 @@ public class Arguments {
         public Arguments build() {
             return new Arguments(this);
         }
-    }
-
-    public static Builder newBuilder() {
-        return new Builder();
     }
 }
