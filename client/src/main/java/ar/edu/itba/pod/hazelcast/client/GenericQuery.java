@@ -1,6 +1,8 @@
 package ar.edu.itba.pod.hazelcast.client;
 
 import ar.edu.itba.pod.hazelcast.client.exceptions.ClientException;
+import ar.edu.itba.pod.hazelcast.client.interfaces.Strategy;
+import ar.edu.itba.pod.hazelcast.client.interfaces.StrategyMapper;
 import ar.edu.itba.pod.hazelcast.client.utils.Arguments;
 import ar.edu.itba.pod.hazelcast.client.utils.Parser;
 import com.hazelcast.client.HazelcastClient;
@@ -19,12 +21,12 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 
-public abstract class GenericClient {
+public abstract class GenericQuery {
 
-    private static final Logger logger = LoggerFactory.getLogger(GenericClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(GenericQuery.class);
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss:SSSS");
 
-    public void run(String[] args, String outputFileName) {
+    public void run(String[] args, String outputFileName, StrategyMapper strategyMapper) {
 
         logger.info("Setting up client");
         try {
@@ -39,6 +41,7 @@ public abstract class GenericClient {
 
             // Parse arguments
             final Arguments arguments = Parser.parse(args);
+            final Strategy strategy = strategyMapper.getStrategy(arguments.getStrategy());
 
             // Client Network Config
             final ClientNetworkConfig clientNetworkConfig = new ClientNetworkConfig();
@@ -49,11 +52,11 @@ public abstract class GenericClient {
             final HazelcastInstance hz = HazelcastClient.newHazelcastClient(clientConfig);
 
             String startLoadingTimestamp = LocalDateTime.now().format(formatter) + " - Inicio de la lectura del archivo";
-            loadData(arguments, hz);
+           strategy.loadData(arguments, hz);
             String finishLoadingTimestamp = LocalDateTime.now().format(formatter) + " - Fin de la lectura del archivo";
 
             String startRunningQueryTimestamp = LocalDateTime.now().format(formatter) + " - Inicio del trabajo map/reduce";
-            runClient(arguments, hz);
+            strategy.runClient(arguments, hz);
             String stopRunningQueryTimestamp = LocalDateTime.now().format(formatter) + " - Fin del trabajo map/reduce";
 
             String[] timestamps = new String[]{startLoadingTimestamp, finishLoadingTimestamp, startRunningQueryTimestamp, stopRunningQueryTimestamp};
@@ -77,8 +80,4 @@ public abstract class GenericClient {
             HazelcastClient.shutdownAll();
         }
     }
-
-    public abstract void loadData(Arguments args, HazelcastInstance hz);
-
-    public abstract void runClient(Arguments args,HazelcastInstance hz);
 }

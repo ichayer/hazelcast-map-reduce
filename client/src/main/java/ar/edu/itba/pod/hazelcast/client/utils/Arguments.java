@@ -1,6 +1,7 @@
 package ar.edu.itba.pod.hazelcast.client.utils;
 
 import ar.edu.itba.pod.hazelcast.client.exceptions.IllegalClientArgumentException;
+import ar.edu.itba.pod.hazelcast.client.interfaces.StrategyMapper;
 
 import java.util.Arrays;
 import java.util.List;
@@ -10,6 +11,7 @@ public class Arguments {
     private final String inPath;
     private final String outPath;
     private final Integer limit;
+    private final String strategy;
 
 
     private Arguments(Builder builder) {
@@ -17,6 +19,12 @@ public class Arguments {
         this.inPath = builder.inPath;
         this.outPath = builder.outPath;
         this.limit = builder.limit;
+
+        if(builder.strategy == null || builder.strategy.isEmpty()){
+            this.strategy = StrategyMapperImpl.DEFAULT_STRATEGY;
+        } else {
+            this.strategy = builder.strategy;
+        }
 
         if (addresses == null || addresses.length == 0 || inPath == null || outPath == null) {
             throw new IllegalClientArgumentException("The parameters -Daddresses, -DinPath and -DoutPath must be provided");
@@ -49,14 +57,25 @@ public class Arguments {
                 '}';
     }
 
+    public String getStrategy() {
+        return strategy;
+    }
+
     public static class Builder {
         private String[] addresses;
         private String inPath;
         private String outPath;
         private Integer limit;
 
+        private String strategy;
+
         public Builder addresses(String[] addresses) {
             this.addresses = addresses;
+            return this;
+        }
+
+        public Builder strategy(String strategy) {
+            this.strategy = strategy;
             return this;
         }
 
