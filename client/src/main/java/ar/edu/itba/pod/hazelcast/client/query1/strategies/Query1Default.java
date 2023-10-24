@@ -25,9 +25,7 @@ import java.util.Map;
 import java.util.TreeSet;
 
 public class Query1Default implements Strategy {
-
-    private static final String QUERY_RESULT = "/query1.csv";
-    private static final String OUTPUT_CSV_HEADER = "station_a;station_b;trips_between_a_b";
+    private static final String JOB_TRACKER_NAME = "travel-count";
     private static final Logger logger = LoggerFactory.getLogger(Query1.class);
 
     @Override
@@ -50,7 +48,7 @@ public class Query1Default implements Strategy {
 
     @Override
     public void runClient(Arguments arguments, HazelcastInstance hz) {
-        final JobTracker jt = hz.getJobTracker("travel-count");
+        final JobTracker jt = hz.getJobTracker(JOB_TRACKER_NAME);
         final IMap<Integer, Map.Entry<Integer, Integer>> list = hz.getMap(Constants.BIKES_MAP);
         final KeyValueSource<Integer, Map.Entry<Integer, Integer>> source = KeyValueSource.fromMap(list);
         final Job<Integer, Map.Entry<Integer, Integer>> job = jt.newJob(source);
@@ -65,7 +63,7 @@ public class Query1Default implements Strategy {
 
         try {
             final TreeSet<TripsCountDto> result = future.get();
-            CsvHelper.printData(arguments.getOutPath() + QUERY_RESULT, OUTPUT_CSV_HEADER, result);
+            CsvHelper.printData(arguments.getOutPath() + Constants.QUERY1_OUTPUT_CSV, Constants.QUERY1_OUTPUT_CSV_HEADER, result);
         } catch (Exception e) {
             logger.error("Error waiting for the computation to complete and retrieve its result in query 1");
         }
