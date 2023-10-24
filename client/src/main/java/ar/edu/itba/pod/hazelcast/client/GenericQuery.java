@@ -1,5 +1,6 @@
 package ar.edu.itba.pod.hazelcast.client;
 
+import ar.edu.itba.pod.hazelcast.api.CredentialsParser;
 import ar.edu.itba.pod.hazelcast.client.exceptions.ClientException;
 import ar.edu.itba.pod.hazelcast.client.interfaces.Strategy;
 import ar.edu.itba.pod.hazelcast.client.interfaces.StrategyMapper;
@@ -34,9 +35,12 @@ public abstract class GenericQuery {
             // Client Config
             final ClientConfig clientConfig = new ClientConfig();
 
+            // Get credentials from credentials.json
+            CredentialsParser cp = CredentialsParser.parseCredentialsFile();
+
             // Group Config
             final GroupConfig groupConfig = new GroupConfig()
-                    .setName("g4").setPassword("g4-pass");
+                    .setName(cp.getGroupName()).setPassword(cp.getGroupPassword());
             clientConfig.setGroupConfig(groupConfig);
 
             // Parse arguments

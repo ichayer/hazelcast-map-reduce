@@ -1,10 +1,10 @@
 package ar.edu.itba.pod.hazelcast.server;
 
+import ar.edu.itba.pod.hazelcast.api.CredentialsParser;
 import com.hazelcast.config.*;
 import com.hazelcast.core.Hazelcast;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.Collections;
 
 public class Server {
@@ -26,8 +26,11 @@ public class Server {
         // Config
         Config config = new Config();
 
+        // Get credentials from credentials.json
+        CredentialsParser cp = CredentialsParser.parseCredentialsFile();
+
         // Group config
-        GroupConfig groupConfig = new GroupConfig().setName("g4").setPassword("g4-pass");
+        GroupConfig groupConfig = new GroupConfig().setName(cp.getGroupName()).setPassword(cp.getGroupPassword());
         config.setGroupConfig(groupConfig);
 
         // Network config
