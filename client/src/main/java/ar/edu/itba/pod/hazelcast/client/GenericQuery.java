@@ -29,59 +29,73 @@ public abstract class GenericQuery {
 
     public void run(String[] args, String outputFileName, StrategyMapper strategyMapper) {
 
-        logger.info("Setting up client");
         try {
-
-            // Client Config
-            final ClientConfig clientConfig = new ClientConfig();
-
-            // Get credentials from credentials.json
-            CredentialsParser cp = CredentialsParser.parseCredentialsFile();
-
-            // Group Config
-            final GroupConfig groupConfig = new GroupConfig()
-                    .setName(cp.getGroupName()).setPassword(cp.getGroupPassword());
-            clientConfig.setGroupConfig(groupConfig);
-
             // Parse arguments
             final Arguments arguments = Parser.parse(args);
+            logger.info("Arguments parsed successfully");
+
+            // Hazelcast instance setup
+            final HazelcastInstance hz = setup(arguments.getAddresses());
+            logger.info("Hazelcast instance created");
+
+            // Get strategy for loading the data and running the query
             final Strategy strategy = strategyMapper.getStrategy(arguments.getStrategy());
-
-            // Client Network Config
-            final ClientNetworkConfig clientNetworkConfig = new ClientNetworkConfig();
-            clientNetworkConfig.addAddress(arguments.getAddresses());
-            clientConfig.setNetworkConfig(clientNetworkConfig);
-
-            // Hazelcast Instance
-            final HazelcastInstance hz = HazelcastClient.newHazelcastClient(clientConfig);
+            logger.info("Strategy selected: " + arguments.getStrategy());
 
             String startLoadingTimestamp = LocalDateTime.now().format(formatter) + " - Inicio de la lectura del archivo";
             strategy.loadData(arguments, hz);
             String finishLoadingTimestamp = LocalDateTime.now().format(formatter) + " - Fin de la lectura del archivo";
+            logger.info("Data loaded successfully");
 
             String startRunningQueryTimestamp = LocalDateTime.now().format(formatter) + " - Inicio del trabajo map/reduce";
             strategy.runClient(arguments, hz);
             String stopRunningQueryTimestamp = LocalDateTime.now().format(formatter) + " - Fin del trabajo map/reduce";
+            logger.info("Query executed successfully");
 
             String[] timestamps = new String[]{startLoadingTimestamp, finishLoadingTimestamp, startRunningQueryTimestamp, stopRunningQueryTimestamp};
-
-            File logFile = new File(arguments.getOutPath() + outputFileName);
-
-            BufferedWriter writer = new BufferedWriter(new FileWriter(logFile));
-            for (String timestamp : timestamps) {
-                writer.write(timestamp);
-                writer.newLine();
-            }
-            writer.close();
-            logger.info(outputFileName + " created successfully");
+            String pathname = arguments.getOutPath() + outputFileName;
+            createLogFile(pathname, timestamps);
+            logger.info("Log file created successfully: " + outputFileName);
+            logger.info("Shutting down Hazelcast instance");
         } catch (ClientException e) {
-            System.out.println("Client error: " + e.getMessage());
+            logger.error("Client error: " + e.getMessage());
         } catch (IOException e) {
-            System.out.println("Error writing " + outputFileName + ": " + e.getMessage());
+            logger.error("Error writing " + outputFileName + ": " + e.getMessage());
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
+            logger.error("Error: " + e.getMessage());
         } finally {
             HazelcastClient.shutdownAll();
         }
+    }
+
+    private HazelcastInstance setup(String[] addresses) {
+
+        // Client Config
+        final ClientConfig clientConfig = new ClientConfig();
+
+        // Get credentials from credentials.json
+        final CredentialsParser cp = CredentialsParser.parseCredentialsFile();
+
+        // Group Config
+        final GroupConfig groupConfig = new GroupConfig()
+                .setName(cp.getGroupName()).setPassword(cp.getGroupPassword());
+        clientConfig.setGroupConfig(groupConfig);
+
+        // Client Network Config
+        final ClientNetworkConfig clientNetworkConfig = new ClientNetworkConfig();
+        clientNetworkConfig.addAddress(addresses);
+        clientConfig.setNetworkConfig(clientNetworkConfig);
+
+        return HazelcastClient.newHazelcastClient(clientConfig);
+    }
+
+    private void createLogFile(String pathname, String[] timestamps) throws IOException {
+        final File logFile = new File(pathname);
+        final BufferedWriter writer = new BufferedWriter(new FileWriter(logFile));
+        for (String timestamp : timestamps) {
+            writer.write(timestamp);
+            writer.newLine();
+        }
+        writer.close();
     }
 }
