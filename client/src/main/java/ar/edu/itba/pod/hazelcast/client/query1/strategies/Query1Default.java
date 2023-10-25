@@ -65,7 +65,7 @@ public class Query1Default implements Strategy {
             final TreeSet<TripsCountDto> result = future.get();
             CsvHelper.printData(arguments.getOutPath() + Constants.QUERY1_OUTPUT_CSV, Constants.QUERY1_OUTPUT_CSV_HEADER, result);
         } catch (Exception e) {
-            logger.error("Error waiting for the computation to complete and retrieve its result in query 1");
+            logger.error("Error waiting for the computation to complete and retrieve its result in query 1", e);
         }
     }
 }

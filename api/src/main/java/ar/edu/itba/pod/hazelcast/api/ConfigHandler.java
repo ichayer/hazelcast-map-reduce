@@ -13,8 +13,8 @@ public class ConfigHandler {
     private final boolean runManagementCenter;
 
     public static ConfigHandler parseConfigFile() {
-        try(BufferedReader reader = new BufferedReader(new FileReader("config.json"))) {
-            JsonObject json =  JsonObject.readFrom(reader);
+        try (BufferedReader reader = new BufferedReader(new FileReader("config.json"))) {
+            JsonObject json = JsonObject.readFrom(reader);
             String groupName = json.getString("groupName", "");
             String groupPassword = json.getString("groupPassword", "");
             boolean runManagementCenter = json.getBoolean("runManagementCenter", false);

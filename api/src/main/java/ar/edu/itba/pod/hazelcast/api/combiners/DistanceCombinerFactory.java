@@ -7,7 +7,7 @@ import com.hazelcast.mapreduce.CombinerFactory;
 import java.util.AbstractMap;
 import java.util.Map;
 
-public class DistanceCombinerFactory implements CombinerFactory<Station, Double, Map.Entry<Double,Integer>> {
+public class DistanceCombinerFactory implements CombinerFactory<Station, Double, Map.Entry<Double, Integer>> {
 
     @Override
     public Combiner<Double, Map.Entry<Double, Integer>> newCombiner(Station station) {
@@ -21,7 +21,7 @@ public class DistanceCombinerFactory implements CombinerFactory<Station, Double,
 
         @Override
         public void combine(Double aDouble) {
-            distanceSum+= aDouble;
+            distanceSum += aDouble;
             count++;
         }
 

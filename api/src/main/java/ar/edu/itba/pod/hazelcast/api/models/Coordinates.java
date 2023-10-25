@@ -44,7 +44,7 @@ public class Coordinates implements DataSerializable {
     public boolean equals(Object o) {
         if (this == o)
             return true;
-        if (! (o instanceof Coordinates))
+        if (!(o instanceof Coordinates))
             return false;
         Coordinates cord = (Coordinates) o;
         return this.longitude == cord.longitude && this.latitude == cord.latitude;
@@ -79,7 +79,7 @@ public class Coordinates implements DataSerializable {
         double deltaLatitude = toLatitudeRadians - fromLatitudeRadians;
         double deltaLongitude = Math.toRadians(other.longitude - this.longitude);
 
-        double centralAngle = haversine(deltaLatitude) + haversine(deltaLongitude)* Math.cos(fromLatitudeRadians) * Math.cos(toLatitudeRadians);
+        double centralAngle = haversine(deltaLatitude) + haversine(deltaLongitude) * Math.cos(fromLatitudeRadians) * Math.cos(toLatitudeRadians);
 
         return EARTH_RADIUS * 2 * Math.asin(Math.sqrt(centralAngle));
     }

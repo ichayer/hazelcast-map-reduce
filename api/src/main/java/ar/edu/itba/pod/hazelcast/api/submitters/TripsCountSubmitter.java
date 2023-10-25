@@ -9,7 +9,7 @@ import com.hazelcast.mapreduce.Collator;
 import java.util.Map;
 import java.util.TreeSet;
 
-public class TripsCountSubmitter implements Collator<Map.Entry<Map.Entry<Integer,Integer>, Integer>, TreeSet<TripsCountDto>>, HazelcastInstanceAware{
+public class TripsCountSubmitter implements Collator<Map.Entry<Map.Entry<Integer, Integer>, Integer>, TreeSet<TripsCountDto>>, HazelcastInstanceAware {
 
     private HazelcastInstance hazelcastInstance;
 

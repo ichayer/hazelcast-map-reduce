@@ -30,7 +30,7 @@ public class AverageDistanceReducer implements ReducerFactory<Station, Map.Entry
 
         @Override
         public Double finalizeReduce() {
-            return distance/count;
+            return distance / count;
         }
     }
 }

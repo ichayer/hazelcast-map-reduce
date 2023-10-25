@@ -5,16 +5,17 @@ import com.hazelcast.config.*;
 import com.hazelcast.core.Hazelcast;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.Collections;
 
 public class Server {
 
-    private static final String MANAGEMENT_CENTER_URL =  "http://localhost:8080/mancenter-3.8.5/";
+    private static final String MANAGEMENT_CENTER_URL = "http://localhost:8080/mancenter-3.8.5/";
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
 
     public static void main(String[] args) {
 
-        if(args.length == 0) {
+        if (args.length == 0) {
             logger.error("Attempted to initialize Hazelcast server without selecting a network interface");
             throw new IllegalArgumentException("No network interface provided");
         }
@@ -52,7 +53,7 @@ public class Server {
         // Add the following flags to the vm before running a new node for the cluster:
         // --add-opens java.management/sun.management=ALL-UNNAMED
         // --add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED
-        if(cf.runManagementCenter()) {
+        if (cf.runManagementCenter()) {
             ManagementCenterConfig managementCenterConfig = new ManagementCenterConfig()
                     .setUrl(MANAGEMENT_CENTER_URL)
                     .setEnabled(true);

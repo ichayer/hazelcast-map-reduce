@@ -19,6 +19,7 @@ import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import java.util.TreeSet;
 
 
@@ -43,7 +44,7 @@ public class Query2Default implements Strategy {
             int startStation = Integer.parseInt(fields[1]);
             int endStation = Integer.parseInt(fields[3]);
             boolean isMember = Integer.parseInt(fields[4]) != 0;
-            if(startStation!=endStation && isMember){
+            if (startStation != endStation && isMember) {
                 tripsMap.put(id, new Bike(null, null, startStation, endStation, isMember));
             }
         });
@@ -57,7 +58,7 @@ public class Query2Default implements Strategy {
         final Job<Integer, Bike> job = jt.newJob(source);
 
         final ICompletableFuture<TreeSet<TripsCountDto>> future;
-                job
+        job
                 .mapper(new DistanceMapper())
                 .combiner(new DistanceCombinerFactory())
                 .reducer(new AverageDistanceReducer())
