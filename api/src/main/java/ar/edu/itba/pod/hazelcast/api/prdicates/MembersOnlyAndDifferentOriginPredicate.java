@@ -1,14 +1,14 @@
 package ar.edu.itba.pod.hazelcast.api.prdicates;
 
-import ar.edu.itba.pod.hazelcast.api.models.Bike;
+import ar.edu.itba.pod.hazelcast.api.models.Trip;
 import com.hazelcast.mapreduce.KeyPredicate;
 
-public class MembersOnlyAndDifferentOriginPredicate implements KeyPredicate<Bike> {
+public class MembersOnlyAndDifferentOriginPredicate implements KeyPredicate<Trip> {
 
     @Override
-    public boolean evaluate(Bike bike) {
+    public boolean evaluate(Trip trip) {
 
-        return bike.isMember() && bike.getOrigin() != bike.getDestination();
+        return trip.isMember() && trip.getOrigin() != trip.getDestination();
     }
 
 }

@@ -7,7 +7,7 @@ import com.hazelcast.nio.serialization.DataSerializable;
 import java.io.IOException;
 import java.time.LocalDateTime;
 
-public class Bike implements DataSerializable {
+public class Trip implements DataSerializable {
 
     private LocalDateTime startDateTime;
     private LocalDateTime endDateTime;
@@ -15,11 +15,11 @@ public class Bike implements DataSerializable {
     private int destination;
     private boolean isMember;
 
-    public Bike() {
+    public Trip() {
 
     }
 
-    public Bike(LocalDateTime startDateTime, LocalDateTime endDateTime, int origin, int destination, boolean isMember) {
+    public Trip(LocalDateTime startDateTime, LocalDateTime endDateTime, int origin, int destination, boolean isMember) {
         this.startDateTime = startDateTime;
         this.endDateTime = endDateTime;
         this.origin = origin;
@@ -87,7 +87,7 @@ public class Bike implements DataSerializable {
 
     @Override
     public String toString() {
-        return "Bike{" +
+        return "Trip{" +
                 "startDateTime=" + startDateTime +
                 ", endDateTime=" + endDateTime +
                 ", origin=" + origin +

@@ -1,12 +1,12 @@
 package ar.edu.itba.pod.hazelcast.client.query3.strategies;
 
-import ar.edu.itba.pod.hazelcast.api.mappers.LongestRidePerStationMapper;
-import ar.edu.itba.pod.hazelcast.api.models.Bike;
+import ar.edu.itba.pod.hazelcast.api.mappers.LongestTripPerStationMapper;
+import ar.edu.itba.pod.hazelcast.api.models.Trip;
 import ar.edu.itba.pod.hazelcast.api.models.Coordinates;
 import ar.edu.itba.pod.hazelcast.api.models.Station;
 import ar.edu.itba.pod.hazelcast.api.models.dto.LongestTripDto;
-import ar.edu.itba.pod.hazelcast.api.reducers.LongestRidePerStationReducerFactory;
-import ar.edu.itba.pod.hazelcast.api.submitters.LongestRidePerStationSubmitter;
+import ar.edu.itba.pod.hazelcast.api.reducers.LongestTripPerStationReducerFactory;
+import ar.edu.itba.pod.hazelcast.api.submitters.LongestTripPerStationSubmitter;
 import ar.edu.itba.pod.hazelcast.client.interfaces.Strategy;
 import ar.edu.itba.pod.hazelcast.client.utils.Arguments;
 import ar.edu.itba.pod.hazelcast.client.utils.Constants;
@@ -32,7 +32,7 @@ public class Query3Default implements Strategy {
     public void loadData(Arguments args, HazelcastInstance hz) {
         IMap<Integer, Station> stationMap = hz.getMap(Constants.STATIONS_MAP);
         stationMap.clear();
-        IList<Bike> tripsList = hz.getList(Constants.BIKES_LIST);
+        IList<Trip> tripsList = hz.getList(Constants.TRIPS_LIST);
         tripsList.clear();
 
         CsvHelper.ReadData(args.getInPath() + Constants.STATIONS_CSV, (fields, id) -> {
@@ -43,29 +43,29 @@ public class Query3Default implements Strategy {
             stationMap.put(stationPk, new Station(stationPk, stationName, new Coordinates(latitude, longitude)));
         });
 
-        CsvHelper.ReadData(args.getInPath() + Constants.BIKES_CSV, (fields, id) -> {
+        CsvHelper.ReadData(args.getInPath() + Constants.TRIPS_CSV, (fields, id) -> {
             LocalDateTime startDate = LocalDateTime.parse(fields[0].replace(' ', 'T'));
             int startStation = Integer.parseInt(fields[1]);
             LocalDateTime endDate = LocalDateTime.parse(fields[2].replace(' ', 'T'));
             int endStation = Integer.parseInt(fields[3]);
             boolean isMember = Integer.parseInt(fields[4]) != 0;
-            tripsList.add(new Bike(startDate, endDate, startStation, endStation, isMember));
+            tripsList.add(new Trip(startDate, endDate, startStation, endStation, isMember));
         });
     }
 
     @Override
     public void runClient(Arguments arguments, HazelcastInstance hz) {
         final JobTracker jt = hz.getJobTracker(JOB_TRACKER_NAME);
-        final IList<Bike> list = hz.getList(Constants.BIKES_LIST);
+        final IList<Trip> list = hz.getList(Constants.TRIPS_LIST);
         IMap<Integer, Station> stationMap = hz.getMap(Constants.STATIONS_MAP);
 
-        final KeyValueSource<String, Bike> source = KeyValueSource.fromList(list);
-        final Job<String, Bike> job = jt.newJob(source);
+        final KeyValueSource<String, Trip> source = KeyValueSource.fromList(list);
+        final Job<String, Trip> job = jt.newJob(source);
 
         final ICompletableFuture<SortedSet<LongestTripDto>> future = job
-                .mapper(new LongestRidePerStationMapper())
-                .reducer(new LongestRidePerStationReducerFactory())
-                .submit(new LongestRidePerStationSubmitter(id -> stationMap.get(id).getName()));
+                .mapper(new LongestTripPerStationMapper())
+                .reducer(new LongestTripPerStationReducerFactory())
+                .submit(new LongestTripPerStationSubmitter(id -> stationMap.get(id).getName()));
 
         try {
             final SortedSet<LongestTripDto> result = future.get();
