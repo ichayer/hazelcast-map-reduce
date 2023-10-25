@@ -33,14 +33,14 @@ public class Query2Default implements Strategy {
     public void loadData(Arguments args, HazelcastInstance hz) {
         IMap<Integer, Station> stationMap = hz.getMap(Constants.STATIONS_MAP);
         IMap<Integer, Trip> tripsMap = hz.getMap(Constants.TRIPS_MAP);
-        CsvHelper.ReadData(args.getInPath() + Constants.STATIONS_CSV, (fields, id) -> {
+        CsvHelper.readData(args.getInPath() + Constants.STATIONS_CSV, (fields, id) -> {
             int stationPk = Integer.parseInt(fields[0]);
             double latitude = Double.parseDouble(fields[2]);
             double longitude = Double.parseDouble(fields[3]);
             stationMap.put(stationPk, new Station(stationPk, fields[1], new Coordinates(latitude, longitude)));
         });
 
-        CsvHelper.ReadData(args.getInPath() + Constants.TRIPS_CSV, (fields, id) -> {
+        CsvHelper.readData(args.getInPath() + Constants.TRIPS_CSV, (fields, id) -> {
             int startStation = Integer.parseInt(fields[1]);
             int endStation = Integer.parseInt(fields[3]);
             boolean isMember = Integer.parseInt(fields[4]) != 0;

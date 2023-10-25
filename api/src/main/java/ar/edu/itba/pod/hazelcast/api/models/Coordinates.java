@@ -24,7 +24,7 @@ public class Coordinates implements DataSerializable {
         this.longitude = longitude;
     }
 
-    private double haversine(double theta) {
+    private static double haversine(double theta) {
         return Math.pow(Math.sin(theta / 2), 2);
     }
 
@@ -46,8 +46,8 @@ public class Coordinates implements DataSerializable {
             return true;
         if (!(o instanceof Coordinates))
             return false;
-        Coordinates cord = (Coordinates) o;
-        return this.longitude == cord.longitude && this.latitude == cord.latitude;
+        Coordinates coord = (Coordinates) o;
+        return this.longitude == coord.longitude && this.latitude == coord.latitude;
     }
 
     @Override

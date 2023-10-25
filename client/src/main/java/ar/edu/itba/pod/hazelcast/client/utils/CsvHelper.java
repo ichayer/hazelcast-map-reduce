@@ -32,7 +32,7 @@ public class CsvHelper {
         }
     }
 
-    public static void ReadData(String file, BiConsumer<String[], Integer> consumer) {
+    public static void readData(String file, BiConsumer<String[], Integer> consumer) {
         CsvFileIterator fileIterator = new CsvFileIterator(file);
         int id = 0;
         while (fileIterator.hasNext()) {
@@ -41,7 +41,7 @@ public class CsvHelper {
                 ++id;
                 consumer.accept(fields, id);
             } else {
-                logger.error(String.format("Invalid line format, expected %d fileds but got %d \n", fileIterator.getColumns(), fields.length));
+                logger.error("Invalid line format, expected {} fileds but got {}", fileIterator.getColumns(), fields.length);
             }
         }
         fileIterator.close();

@@ -58,11 +58,11 @@ public abstract class GenericQuery {
             logger.info("Log file created successfully: " + outputFileName);
             logger.info("Shutting down Hazelcast instance");
         } catch (ClientException e) {
-            logger.error("Client error: " + e.getMessage());
+            logger.error("Client error: " + e.getMessage(), e);
         } catch (IOException e) {
-            logger.error("Error writing " + outputFileName + ": " + e.getMessage());
+            logger.error("Error writing {}: {}", outputFileName, e.getMessage(), e);
         } catch (Exception e) {
-            logger.error("Error: " + e.getMessage());
+            logger.error("Unknown error: {}", e.getMessage(), e);
         } finally {
             HazelcastClient.shutdownAll();
         }

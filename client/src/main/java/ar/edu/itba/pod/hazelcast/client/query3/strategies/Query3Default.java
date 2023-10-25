@@ -35,7 +35,7 @@ public class Query3Default implements Strategy {
         IList<Trip> tripsList = hz.getList(Constants.TRIPS_LIST);
         tripsList.clear();
 
-        CsvHelper.ReadData(args.getInPath() + Constants.STATIONS_CSV, (fields, id) -> {
+        CsvHelper.readData(args.getInPath() + Constants.STATIONS_CSV, (fields, id) -> {
             int stationPk = Integer.parseInt(fields[0]);
             String stationName = fields[1];
             double latitude = Double.parseDouble(fields[2]);
@@ -43,7 +43,7 @@ public class Query3Default implements Strategy {
             stationMap.put(stationPk, new Station(stationPk, stationName, new Coordinates(latitude, longitude)));
         });
 
-        CsvHelper.ReadData(args.getInPath() + Constants.TRIPS_CSV, (fields, id) -> {
+        CsvHelper.readData(args.getInPath() + Constants.TRIPS_CSV, (fields, id) -> {
             LocalDateTime startDate = LocalDateTime.parse(fields[0].replace(' ', 'T'));
             int startStation = Integer.parseInt(fields[1]);
             LocalDateTime endDate = LocalDateTime.parse(fields[2].replace(' ', 'T'));

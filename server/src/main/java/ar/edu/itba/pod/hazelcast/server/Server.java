@@ -14,7 +14,6 @@ public class Server {
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
 
     public static void main(String[] args) {
-
         if (args.length == 0) {
             logger.error("Attempted to initialize Hazelcast server without selecting a network interface");
             throw new IllegalArgumentException("No network interface provided");
