@@ -1,6 +1,6 @@
 package ar.edu.itba.pod.hazelcast.client.utils;
 
-import ar.edu.itba.pod.hazelcast.api.models.Dto;
+import ar.edu.itba.pod.hazelcast.api.models.dto.Dto;
 import ar.edu.itba.pod.hazelcast.client.exceptions.IOClientFileError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

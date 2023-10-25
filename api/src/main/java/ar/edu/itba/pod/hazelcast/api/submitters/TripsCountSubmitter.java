@@ -1,12 +1,11 @@
 package ar.edu.itba.pod.hazelcast.api.submitters;
 
 import ar.edu.itba.pod.hazelcast.api.models.Station;
-import ar.edu.itba.pod.hazelcast.api.models.TripsCountDto;
+import ar.edu.itba.pod.hazelcast.api.models.dto.TripsCountDto;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.HazelcastInstanceAware;
 import com.hazelcast.mapreduce.Collator;
 
-import java.io.Serializable;
 import java.util.Map;
 import java.util.TreeSet;
 

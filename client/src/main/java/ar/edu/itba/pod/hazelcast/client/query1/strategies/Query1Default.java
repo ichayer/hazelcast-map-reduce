@@ -3,11 +3,10 @@ package ar.edu.itba.pod.hazelcast.client.query1.strategies;
 import ar.edu.itba.pod.hazelcast.api.mappers.TripsCountMapper;
 import ar.edu.itba.pod.hazelcast.api.models.Coordinates;
 import ar.edu.itba.pod.hazelcast.api.models.Station;
-import ar.edu.itba.pod.hazelcast.api.models.TripsCountDto;
+import ar.edu.itba.pod.hazelcast.api.models.dto.TripsCountDto;
 import ar.edu.itba.pod.hazelcast.api.reducers.TripsCountReducerFactory;
 import ar.edu.itba.pod.hazelcast.api.submitters.TripsCountSubmitter;
 import ar.edu.itba.pod.hazelcast.client.interfaces.Strategy;
-import ar.edu.itba.pod.hazelcast.client.query1.Query1;
 import ar.edu.itba.pod.hazelcast.client.utils.Arguments;
 import ar.edu.itba.pod.hazelcast.client.utils.Constants;
 import ar.edu.itba.pod.hazelcast.client.utils.CsvHelper;
@@ -25,8 +24,9 @@ import java.util.Map;
 import java.util.TreeSet;
 
 public class Query1Default implements Strategy {
+
     private static final String JOB_TRACKER_NAME = "travel-count";
-    private static final Logger logger = LoggerFactory.getLogger(Query1.class);
+    private static final Logger logger = LoggerFactory.getLogger(Query1Default.class);
 
     @Override
     public void loadData(Arguments args, HazelcastInstance hz) {
