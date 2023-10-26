@@ -2,12 +2,17 @@ package ar.edu.itba.pod.hazelcast.client.utils;
 
 import ar.edu.itba.pod.hazelcast.client.exceptions.IllegalClientArgumentException;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.Arrays;
 
 public class Arguments {
     private final String[] addresses;
     private final String inPath;
     private final String outPath;
+    private final LocalDate startDate;
+    private final LocalDate endDate;
     private final Integer limit;
     private final String strategy;
 
@@ -15,6 +20,8 @@ public class Arguments {
         this.addresses = builder.addresses;
         this.inPath = builder.inPath;
         this.outPath = builder.outPath;
+        this.startDate = builder.startDate;
+        this.endDate = builder.endDate;
         this.limit = builder.limit;
 
         if (builder.strategy == null || builder.strategy.isEmpty()) {
@@ -44,6 +51,14 @@ public class Arguments {
         return limit;
     }
 
+    public LocalDate getStartDate() {
+        return startDate;
+    }
+
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
     @Override
     public String toString() {
         return "Arguments{" +
@@ -62,6 +77,8 @@ public class Arguments {
         private String[] addresses;
         private String inPath;
         private String outPath;
+        private LocalDate startDate;
+        private LocalDate endDate;
         private Integer limit;
         private String strategy;
 
@@ -82,6 +99,21 @@ public class Arguments {
 
         public Builder outPath(String outPath) {
             this.outPath = outPath;
+            return this;
+        }
+
+        private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        private static LocalDate parseDate(String date) {
+            return LocalDate.parse(date, dateTimeFormatter);
+        }
+
+        public Builder startDate(String startDate) {
+            this.startDate = parseDate(startDate);
+            return this;
+        }
+
+        public Builder endDate(String endDate) {
+            this.endDate =  parseDate(endDate);
             return this;
         }
 

@@ -21,15 +21,22 @@ public class LongestTripPerStationSubmitter implements Collator<Map.Entry<Intege
     public SortedSet<LongestTripDto> collate(Iterable<Map.Entry<Integer, Trip>> values) {
         SortedSet<LongestTripDto> set = new TreeSet<>();
 
-        values.forEach(entry -> {
+        for (Map.Entry<Integer, Trip> entry : values) {
             Trip trip = entry.getValue();
+            String originStationName = stationNameSource.apply(trip.getOrigin());
+            if (originStationName == null)
+                continue;
+            String destinationStationName = stationNameSource.apply(trip.getDestination());
+            if (destinationStationName == null)
+                continue;
+
             set.add(new LongestTripDto(
-                    stationNameSource.apply(trip.getOrigin()),
-                    stationNameSource.apply(trip.getDestination()),
+                    originStationName,
+                    destinationStationName,
                     trip.getStartDateTime(),
                     (int) ChronoUnit.MINUTES.between(trip.getStartDateTime(), trip.getEndDateTime())
             ));
-        });
+        }
 
         return set;
     }

@@ -10,6 +10,8 @@ public class Parser {
             Map.entry("-Daddresses", (argValue, argBuilder) -> argBuilder.addresses(argValue.substring(1, argValue.length() - 1).split(";"))),
             Map.entry("-DinPath", (argValue, argBuilder) -> argBuilder.inPath(argValue)),
             Map.entry("-DoutPath", (argValue, argBuilder) -> argBuilder.outPath(argValue)),
+            Map.entry("-DstartDate", (argValue, argBuilder) -> argBuilder.startDate(argValue)),
+            Map.entry("-DendDate", (argValue, argBuilder) -> argBuilder.endDate(argValue)),
             Map.entry("-Dn", (argValue, argBuilder) -> argBuilder.limit(Integer.parseInt(argValue))),
             Map.entry("-Dstrategy", (argValue, argBuilder) -> argBuilder.strategy(argValue))
     );
