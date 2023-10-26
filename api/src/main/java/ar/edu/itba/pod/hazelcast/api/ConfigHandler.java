@@ -8,23 +8,25 @@ import java.io.IOException;
 
 public class ConfigHandler {
 
+    private static final String FILE_NAME = "config.json";
+
     private final String groupName;
     private final String groupPassword;
     private final boolean runManagementCenter;
 
     public static ConfigHandler parseConfigFile() {
-        try (BufferedReader reader = new BufferedReader(new FileReader("config.json"))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(FILE_NAME))) {
             JsonObject json = JsonObject.readFrom(reader);
             String groupName = json.getString("groupName", "");
             String groupPassword = json.getString("groupPassword", "");
             boolean runManagementCenter = json.getBoolean("runManagementCenter", false);
 
             if (groupPassword.isBlank() || groupName.isBlank()) {
-                throw new IllegalArgumentException("Invalid config.json");
+                throw new IllegalArgumentException("Invalid " + FILE_NAME);
             }
             return new ConfigHandler(groupName, groupPassword, runManagementCenter);
         } catch (IOException e) {
-            throw new RuntimeException("Error reading config.json: " + e.getMessage());
+            throw new RuntimeException("Error reading " + FILE_NAME + ": " + e.getMessage());
         }
     }
 
