@@ -2,11 +2,12 @@ package ar.edu.itba.pod.hazelcast.client.query2.strategies;
 
 import ar.edu.itba.pod.hazelcast.api.combiners.DistanceCombinerFactory;
 import ar.edu.itba.pod.hazelcast.api.mappers.DistanceMapper;
+import ar.edu.itba.pod.hazelcast.api.models.dto.AverageDistanceDto;
 import ar.edu.itba.pod.hazelcast.api.models.Trip;
 import ar.edu.itba.pod.hazelcast.api.models.Coordinates;
 import ar.edu.itba.pod.hazelcast.api.models.Station;
-import ar.edu.itba.pod.hazelcast.api.models.dto.TripsCountDto;
 import ar.edu.itba.pod.hazelcast.api.reducers.AverageDistanceReducer;
+import ar.edu.itba.pod.hazelcast.api.submitters.AverageDistanceSubmitter;
 import ar.edu.itba.pod.hazelcast.client.interfaces.Strategy;
 import ar.edu.itba.pod.hazelcast.client.utils.Arguments;
 import ar.edu.itba.pod.hazelcast.client.utils.Constants;
@@ -28,11 +29,13 @@ public class Query2Default implements Strategy {
     private static final Logger logger = LoggerFactory.getLogger(Query2Default.class);
     private static final String JOB_TRACKER_NAME = "top-n-stations";
 
-
     @Override
     public void loadData(Arguments args, HazelcastInstance hz) {
         IMap<Integer, Station> stationMap = hz.getMap(Constants.STATIONS_MAP);
+        stationMap.clear();
         IMap<Integer, Trip> tripsMap = hz.getMap(Constants.TRIPS_MAP);
+        tripsMap.clear();
+
         CsvHelper.readData(args.getInPath() + Constants.STATIONS_CSV, (fields, id) -> {
             int stationPk = Integer.parseInt(fields[0]);
             double latitude = Double.parseDouble(fields[2]);
@@ -53,22 +56,23 @@ public class Query2Default implements Strategy {
     @Override
     public void runClient(Arguments arguments, HazelcastInstance hz) {
         final JobTracker jt = hz.getJobTracker(JOB_TRACKER_NAME);
-        final IMap<Integer, Trip> list = hz.getMap(Constants.TRIPS_MAP);
-        final KeyValueSource<Integer, Trip> source = KeyValueSource.fromMap(list);
+        final IMap<Integer, Trip> tripsIMap = hz.getMap(Constants.TRIPS_MAP);
+        final KeyValueSource<Integer, Trip> source = KeyValueSource.fromMap(tripsIMap);
         final Job<Integer, Trip> job = jt.newJob(source);
 
-        final ICompletableFuture<TreeSet<TripsCountDto>> future;
-        job
+        final ICompletableFuture<TreeSet<AverageDistanceDto>> future = job
                 .mapper(new DistanceMapper())
                 .combiner(new DistanceCombinerFactory())
                 .reducer(new AverageDistanceReducer())
-                .submit();
+                .submit(new AverageDistanceSubmitter(arguments.getLimit()));
 
-//        try {
-//            final TreeSet<TopNStationsDto> result = future.get();
-//            CsvHelper.printData(arguments.getOutPath() + Constants.QUERY2_OUTPUT_CSV, Constants.QUERY2_OUTPUT_CSV_HEADER, result);
-//        } catch (Exception e) {
-//            logger.error("Error waiting for the computation to complete and retrieve its result in query 1");
-//        }
+        try {
+            final TreeSet<AverageDistanceDto> result = future.get();
+            CsvHelper.printData(arguments.getOutPath() + Constants.QUERY2_OUTPUT_CSV, Constants.QUERY2_OUTPUT_CSV_HEADER, result);
+        } catch (Exception e) {
+            logger.error("Error waiting for the computation to complete and retrieve its result in query 2", e);
+        } finally {
+            tripsIMap.clear();
+        }
     }
 }

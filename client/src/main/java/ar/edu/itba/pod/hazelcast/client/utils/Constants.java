@@ -15,6 +15,7 @@ public final class Constants {
 
     public static final String QUERY2_OUTPUT_CSV = "/query2.csv";
     public static final String QUERY2_OUTPUT_TXT = "/time2.txt";
+    public static final String QUERY2_OUTPUT_CSV_HEADER = "station;avg_distance";
 
     public static final String QUERY3_OUTPUT_TXT = "/time3.txt";
     public static final String QUERY3_OUTPUT_CSV = "/query3.csv";
