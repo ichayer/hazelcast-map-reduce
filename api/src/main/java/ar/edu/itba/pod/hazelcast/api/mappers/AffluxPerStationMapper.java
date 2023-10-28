@@ -11,7 +11,7 @@ import com.hazelcast.mapreduce.Mapper;
 public class AffluxPerStationMapper implements Mapper<StationIdAndDate, Integer, Integer, AffluxCount> {
     @Override
     public void map(StationIdAndDate stationIdAndDate, Integer bikeInflux, Context<Integer, AffluxCount> context) {
-        AffluxCount afflux = bikeInflux > 0 ? new AffluxCount(1, 0) : new AffluxCount(0, 1);
+        AffluxCount afflux = new AffluxCount(bikeInflux > 0 ? 1 : 0, bikeInflux < 0 ? 1 : 0);
         context.emit(stationIdAndDate.getStationId(), afflux);
     }
 }

@@ -1,5 +1,7 @@
 package ar.edu.itba.pod.hazelcast.client.query4.strategies;
 
+import ar.edu.itba.pod.hazelcast.api.combiners.AffluxPerStationCombinerFactory;
+import ar.edu.itba.pod.hazelcast.api.combiners.BikeAffluxPerStationDayCombinerFactory;
 import ar.edu.itba.pod.hazelcast.api.mappers.AffluxPerStationMapper;
 import ar.edu.itba.pod.hazelcast.api.mappers.BikeAffluxPerStationDayMapper;
 import ar.edu.itba.pod.hazelcast.api.models.StationIdAndDate;
@@ -25,8 +27,7 @@ import org.slf4j.LoggerFactory;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Map;
-import java.util.SortedSet;
+import java.util.*;
 
 public class Query4Default implements Strategy {
     private static final String JOB_TRACKER_NAME_1 = "afflux-days-1";
@@ -58,7 +59,8 @@ public class Query4Default implements Strategy {
             LocalDateTime endDate = LocalDateTime.parse(fields[2].replace(' ', 'T'));
             int endStation = Integer.parseInt(fields[3]);
             boolean isMember = Integer.parseInt(fields[4]) != 0;
-            tripsList.add(new Trip(startDate, endDate, startStation, endStation, isMember));
+            Trip trip = new Trip(startDate, endDate, startStation, endStation, isMember);
+            tripsList.add(trip);
         });
     }
 
@@ -78,6 +80,7 @@ public class Query4Default implements Strategy {
 
         final ICompletableFuture<Map<StationIdAndDate, Integer>> future1 = job1
                 .mapper(new BikeAffluxPerStationDayMapper(startDate, endDate))
+                .combiner(new BikeAffluxPerStationDayCombinerFactory())
                 .reducer(new BikeAffluxPerStationDayReducerFactory())
                 .submit();
 
@@ -92,6 +95,7 @@ public class Query4Default implements Strategy {
 
             final ICompletableFuture<SortedSet<AffluxCountDto>> future2 = job2
                     .mapper(new AffluxPerStationMapper())
+                    .combiner(new AffluxPerStationCombinerFactory())
                     .reducer(new AffluxPerStationReducerFactory())
                     .submit(new AffluxPerStationSubmitter(stationMap::get, totalDays));
 

@@ -31,11 +31,11 @@ public class BikeAffluxPerStationDayMapper implements Mapper<String, Trip, Stati
 
         // if (tripStartDate >= startDate && tripStartDate <= endDate)
         if (!tripStartDate.isBefore(startDate) && !tripStartDate.isAfter(endDate))
-            context.emit(new StationIdAndDate(trip.getOrigin(), trip.getStartDateTime().toLocalDate()), -1);
+            context.emit(new StationIdAndDate(trip.getOrigin(), tripStartDate), -1);
 
         // if (tripEndDate >= startDate && tripEndDate <= endDate)
         if (!tripEndDate.isBefore(startDate) && !tripEndDate.isAfter(endDate))
-            context.emit(new StationIdAndDate(trip.getDestination(), trip.getEndDateTime().toLocalDate()), 1);
+            context.emit(new StationIdAndDate(trip.getDestination(), tripEndDate), 1);
     }
 
     public LocalDate getStartDate() {

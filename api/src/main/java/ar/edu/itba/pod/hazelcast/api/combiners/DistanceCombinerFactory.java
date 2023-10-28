@@ -15,7 +15,6 @@ public class DistanceCombinerFactory implements CombinerFactory<Station, Double,
     }
 
     private static class DistanceReducer extends Combiner<Double, Map.Entry<Double, Integer>> {
-
         int count = 0;
         double distanceSum = 0;
 

@@ -1,6 +1,5 @@
 package ar.edu.itba.pod.hazelcast.api.models;
 
-import ar.edu.itba.pod.hazelcast.api.models.dto.Dto;
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
 import com.hazelcast.nio.serialization.DataSerializable;
