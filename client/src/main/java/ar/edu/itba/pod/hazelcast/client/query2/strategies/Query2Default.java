@@ -21,6 +21,7 @@ import com.hazelcast.mapreduce.KeyValueSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.SortedSet;
 import java.util.TreeSet;
 
 
@@ -57,22 +58,24 @@ public class Query2Default implements Strategy {
     public void runClient(Arguments arguments, HazelcastInstance hz) {
         final JobTracker jt = hz.getJobTracker(JOB_TRACKER_NAME);
         final IMap<Integer, Trip> tripsIMap = hz.getMap(Constants.TRIPS_MAP);
+        final IMap<Integer, Station> stationIMap = hz.getMap(Constants.STATIONS_MAP);
         final KeyValueSource<Integer, Trip> source = KeyValueSource.fromMap(tripsIMap);
         final Job<Integer, Trip> job = jt.newJob(source);
 
-        final ICompletableFuture<TreeSet<AverageDistanceDto>> future = job
+        final ICompletableFuture<SortedSet<AverageDistanceDto>> future = job
                 .mapper(new DistanceMapper())
                 .combiner(new DistanceCombinerFactory())
                 .reducer(new AverageDistanceReducer())
-                .submit(new AverageDistanceSubmitter(arguments.getLimit()));
+                .submit(new AverageDistanceSubmitter(arguments.getLimit(), stationIMap::get));
 
         try {
-            final TreeSet<AverageDistanceDto> result = future.get();
+            final SortedSet<AverageDistanceDto> result = future.get();
             CsvHelper.printData(arguments.getOutPath() + Constants.QUERY2_OUTPUT_CSV, Constants.QUERY2_OUTPUT_CSV_HEADER, result);
         } catch (Exception e) {
             logger.error("Error waiting for the computation to complete and retrieve its result in query 2", e);
         } finally {
             tripsIMap.clear();
+            stationIMap.clear();
         }
     }
 }

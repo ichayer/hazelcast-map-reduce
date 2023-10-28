@@ -35,11 +35,11 @@ public class TripsCountDto implements Comparable<TripsCountDto>, DataSerializabl
 
     @Override
     public int compareTo(TripsCountDto o) {
-        int compare = this.count - o.count;
+        int compare = o.count - this.count;
         if (compare == 0) {
-            compare = this.stationFrom.compareTo(o.stationFrom);
+            compare = String.CASE_INSENSITIVE_ORDER.compare(this.stationFrom, o.stationFrom);
             if (compare == 0) {
-                return this.stationTo.compareTo(o.stationTo);
+                return String.CASE_INSENSITIVE_ORDER.compare(this.stationTo, o.stationTo);
             }
             return compare;
         }

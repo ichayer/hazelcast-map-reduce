@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.AbstractMap;
 import java.util.Map;
-import java.util.TreeSet;
+import java.util.SortedSet;
 
 public class Query1Default implements Strategy {
 
@@ -31,7 +31,10 @@ public class Query1Default implements Strategy {
     @Override
     public void loadData(Arguments args, HazelcastInstance hz) {
         IMap<Integer, Station> stationMap = hz.getMap(Constants.STATIONS_MAP);
+        stationMap.clear();
         IMap<Integer, Map.Entry<Integer, Integer>> tripsMap = hz.getMap(Constants.TRIPS_MAP);
+        tripsMap.clear();
+        
         CsvHelper.readData(args.getInPath() + Constants.STATIONS_CSV, (fields, id) -> {
             int stationPk = Integer.parseInt(fields[0]);
             double latitude = Double.parseDouble(fields[2]);
@@ -49,23 +52,24 @@ public class Query1Default implements Strategy {
     @Override
     public void runClient(Arguments arguments, HazelcastInstance hz) {
         final JobTracker jt = hz.getJobTracker(JOB_TRACKER_NAME);
-        final IMap<Integer, Map.Entry<Integer, Integer>> list = hz.getMap(Constants.TRIPS_MAP);
-        final KeyValueSource<Integer, Map.Entry<Integer, Integer>> source = KeyValueSource.fromMap(list);
+        final IMap<Integer, Station> stationIMap = hz.getMap(Constants.STATIONS_MAP);
+        final IMap<Integer, Map.Entry<Integer, Integer>> tripsImap = hz.getMap(Constants.TRIPS_MAP);
+        final KeyValueSource<Integer, Map.Entry<Integer, Integer>> source = KeyValueSource.fromMap(tripsImap);
         final Job<Integer, Map.Entry<Integer, Integer>> job = jt.newJob(source);
 
-        TripsCountSubmitter t = new TripsCountSubmitter();
-        t.setHazelcastInstance(hz);
-
-        final ICompletableFuture<TreeSet<TripsCountDto>> future = job
+        final ICompletableFuture<SortedSet<TripsCountDto>> future = job
                 .mapper(new TripsCountMapper())
                 .reducer(new TripsCountReducerFactory())
-                .submit(t);
+                .submit(new TripsCountSubmitter(stationIMap::get));
 
         try {
-            final TreeSet<TripsCountDto> result = future.get();
+            final SortedSet<TripsCountDto> result = future.get();
             CsvHelper.printData(arguments.getOutPath() + Constants.QUERY1_OUTPUT_CSV, Constants.QUERY1_OUTPUT_CSV_HEADER, result);
         } catch (Exception e) {
             logger.error("Error waiting for the computation to complete and retrieve its result in query 1", e);
+        } finally {
+            stationIMap.clear();
+            tripsImap.clear();
         }
     }
 }

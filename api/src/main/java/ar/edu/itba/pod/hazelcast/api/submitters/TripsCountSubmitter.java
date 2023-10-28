@@ -7,22 +7,40 @@ import com.hazelcast.core.HazelcastInstanceAware;
 import com.hazelcast.mapreduce.Collator;
 
 import java.util.Map;
+import java.util.Objects;
+import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.Function;
 
-public class TripsCountSubmitter implements Collator<Map.Entry<Map.Entry<Integer, Integer>, Integer>, TreeSet<TripsCountDto>>, HazelcastInstanceAware {
+public class TripsCountSubmitter implements Collator<Map.Entry<Map.Entry<Integer, Integer>, Integer>, SortedSet<TripsCountDto>> {
 
-    private HazelcastInstance hazelcastInstance;
+    private final Function<Integer, Station> function;
 
-    @Override
-    public TreeSet<TripsCountDto> collate(Iterable<Map.Entry<Map.Entry<Integer, Integer>, Integer>> values) {
-        TreeSet<TripsCountDto> t = new TreeSet<>();
-        Map<Integer, Station> map = hazelcastInstance.getMap("g4-StationsMap");
-        values.forEach((v) -> t.add(new TripsCountDto(map.get(v.getKey().getKey()).getName(), map.get(v.getKey().getValue()).getName(), v.getValue())));
-        return t;
+    public TripsCountSubmitter(Function<Integer, Station> function) {
+        this.function = function;
     }
 
     @Override
-    public void setHazelcastInstance(HazelcastInstance hazelcastInstance) {
-        this.hazelcastInstance = hazelcastInstance;
+    public SortedSet<TripsCountDto> collate(Iterable<Map.Entry<Map.Entry<Integer, Integer>, Integer>> values) {
+        SortedSet<TripsCountDto> treeSet = new TreeSet<>();
+
+        for(Map.Entry<Map.Entry<Integer, Integer>, Integer> value: values) {
+            Station startingStation = function.apply(value.getKey().getKey());
+            Station finishingStation = function.apply(value.getKey().getValue());
+            int counter = value.getValue();
+
+            if(Objects.isNull(startingStation) || Objects.isNull(finishingStation))
+                continue;
+
+            if(startingStation.equals(finishingStation))
+                continue;
+
+            if(counter <= 0)
+                continue;
+
+            treeSet.add(new TripsCountDto(startingStation.getName(),finishingStation.getName(), counter));
+        };
+
+        return treeSet;
     }
 }
