@@ -1,5 +1,6 @@
 package ar.edu.itba.pod.hazelcast.client.query3.strategies;
 
+import ar.edu.itba.pod.hazelcast.api.combiners.LongestTripPerStationCombinerFactory;
 import ar.edu.itba.pod.hazelcast.api.mappers.LongestTripPerStationMapper;
 import ar.edu.itba.pod.hazelcast.api.models.Trip;
 import ar.edu.itba.pod.hazelcast.api.models.dto.LongestTripDto;
@@ -63,6 +64,7 @@ public class Query3Default implements Strategy {
 
         final ICompletableFuture<SortedSet<LongestTripDto>> future = job
                 .mapper(new LongestTripPerStationMapper())
+                .combiner(new LongestTripPerStationCombinerFactory())
                 .reducer(new LongestTripPerStationReducerFactory())
                 .submit(new LongestTripPerStationSubmitter(stationMap::get));
 
@@ -72,7 +74,6 @@ public class Query3Default implements Strategy {
         } catch (Exception e) {
             logger.error("Error waiting for the computation to complete and retrieve its result in query 3", e);
         } finally {
-            // TODO: Should we clear the collections after we're done?
             stationMap.clear();
             tripsList.clear();
         }
