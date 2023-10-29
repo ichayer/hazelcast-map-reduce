@@ -6,6 +6,7 @@ import ar.edu.itba.pod.hazelcast.api.models.Station;
 import ar.edu.itba.pod.hazelcast.api.models.dto.TripsCountDto;
 import ar.edu.itba.pod.hazelcast.api.reducers.TripsCountReducerFactory;
 import ar.edu.itba.pod.hazelcast.api.submitters.TripsCountSubmitter;
+import ar.edu.itba.pod.hazelcast.client.BaseStrategy;
 import ar.edu.itba.pod.hazelcast.client.interfaces.Strategy;
 import ar.edu.itba.pod.hazelcast.client.utils.Arguments;
 import ar.edu.itba.pod.hazelcast.client.utils.Constants;
@@ -23,44 +24,54 @@ import java.util.AbstractMap;
 import java.util.Map;
 import java.util.SortedSet;
 
-public class Query1Default implements Strategy {
+public class Query1Default extends BaseStrategy {
 
-    private static final String JOB_TRACKER_NAME = "travel-count";
     private static final Logger logger = LoggerFactory.getLogger(Query1Default.class);
+    private static final String JOB_TRACKER_NAME = "travel-count";
+    private IMap<Integer, Station> stationIMap;
+    private IMap<Integer, Map.Entry<Integer, Integer>> tripsIMap;
+
+    public Query1Default() {
+        super(Constants.STATIONS_MAP, Constants.TRIPS_MAP);
+    }
 
     @Override
-    public void loadData(Arguments args, HazelcastInstance hz) {
-        IMap<Integer, Station> stationMap = hz.getMap(Constants.STATIONS_MAP);
-        stationMap.clear();
-        IMap<Integer, Map.Entry<Integer, Integer>> tripsMap = hz.getMap(Constants.TRIPS_MAP);
-        tripsMap.clear();
-        
-        CsvHelper.readData(args.getInPath() + Constants.STATIONS_CSV, (fields, id) -> {
+    protected void clearIMaps(HazelcastInstance hz) {
+        this.stationIMap = getStationsIMap(hz);
+        stationIMap.clear();
+        this.tripsIMap = getTripsMap(hz);
+        tripsIMap.clear();
+    }
+
+    @Override
+    protected void loadStationsFromCsv(String filePath) {
+        CsvHelper.readData(filePath, (fields, id) -> {
             int stationPk = Integer.parseInt(fields[0]);
             double latitude = Double.parseDouble(fields[2]);
             double longitude = Double.parseDouble(fields[3]);
-            stationMap.put(stationPk, new Station(stationPk, fields[1], new Coordinates(latitude, longitude)));
+            this.stationIMap.put(stationPk, new Station(stationPk, fields[1], new Coordinates(latitude, longitude)));
         });
+    }
 
-        CsvHelper.readData(args.getInPath() + Constants.TRIPS_CSV, (fields, id) -> {
+    @Override
+    protected void loadTripsFromCsv(String filePath) {
+        CsvHelper.readData(filePath, (fields, id) -> {
             int startStation = Integer.parseInt(fields[1]);
             int endStation = Integer.parseInt(fields[3]);
-            tripsMap.put(id, new AbstractMap.SimpleEntry<>(startStation, endStation));
+            this.tripsIMap.put(id, new AbstractMap.SimpleEntry<>(startStation, endStation));
         });
     }
 
     @Override
     public void runClient(Arguments arguments, HazelcastInstance hz) {
         final JobTracker jt = hz.getJobTracker(JOB_TRACKER_NAME);
-        final IMap<Integer, Station> stationIMap = hz.getMap(Constants.STATIONS_MAP);
-        final IMap<Integer, Map.Entry<Integer, Integer>> tripsImap = hz.getMap(Constants.TRIPS_MAP);
-        final KeyValueSource<Integer, Map.Entry<Integer, Integer>> source = KeyValueSource.fromMap(tripsImap);
+        final KeyValueSource<Integer, Map.Entry<Integer, Integer>> source = KeyValueSource.fromMap(this.tripsIMap);
         final Job<Integer, Map.Entry<Integer, Integer>> job = jt.newJob(source);
 
         final ICompletableFuture<SortedSet<TripsCountDto>> future = job
                 .mapper(new TripsCountMapper())
                 .reducer(new TripsCountReducerFactory())
-                .submit(new TripsCountSubmitter(stationIMap::get));
+                .submit(new TripsCountSubmitter(this.stationIMap::get));
 
         try {
             final SortedSet<TripsCountDto> result = future.get();
@@ -68,8 +79,8 @@ public class Query1Default implements Strategy {
         } catch (Exception e) {
             logger.error("Error waiting for the computation to complete and retrieve its result in query 1", e);
         } finally {
-            stationIMap.clear();
-            tripsImap.clear();
+            this.stationIMap.clear();
+            this.tripsIMap.clear();
         }
     }
 }
