@@ -10,10 +10,10 @@ import java.util.function.Supplier;
 public class StrategyMapperImpl implements StrategyMapper {
 
     public static final String DEFAULT_STRATEGY = "DEFAULT";
-    private final Map<String, Supplier<Strategy>> strategyMapper;
+    private final Map<String, Supplier<Strategy>> strategies;
 
-    public StrategyMapperImpl(Map<String, Supplier<Strategy>> strategyMapper) {
-        this.strategyMapper = strategyMapper;
+    public StrategyMapperImpl(Map<String, Supplier<Strategy>> strategies) {
+        this.strategies = CollectionsUtils.requireNotEmpty(strategies);
     }
 
     private static Strategy InvalidAction() {
@@ -22,6 +22,6 @@ public class StrategyMapperImpl implements StrategyMapper {
 
     @Override
     public Strategy getStrategy(String strategy) {
-        return strategyMapper.getOrDefault(strategy, StrategyMapperImpl::InvalidAction).get();
+        return strategies.getOrDefault(strategy, StrategyMapperImpl::InvalidAction).get();
     }
 }

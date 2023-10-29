@@ -7,6 +7,7 @@ import ar.edu.itba.pod.hazelcast.client.interfaces.StrategyMapper;
 import ar.edu.itba.pod.hazelcast.client.utils.Arguments;
 import ar.edu.itba.pod.hazelcast.client.utils.Constants;
 import ar.edu.itba.pod.hazelcast.client.utils.Parser;
+import ar.edu.itba.pod.hazelcast.client.utils.StrategyMapperImpl;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.client.config.ClientNetworkConfig;
@@ -15,15 +16,29 @@ import com.hazelcast.core.HazelcastInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class GenericQuery {
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Supplier;
 
+public abstract class BaseQuery {
+
+    private final String[] arguments;
+    private final String outputFileName;
+    private final StrategyMapper strategyMapper;
     private Logger logger;
-    public void run(String[] args, String outputFileName, StrategyMapper strategyMapper) {
+
+    BaseQuery(String[] arguments, String outputFileName, Map<String, Supplier<Strategy>> strategies) {
+        this.arguments = Objects.requireNonNull(arguments);
+        this.outputFileName = Objects.requireNonNull(outputFileName);
+        this.strategyMapper = new StrategyMapperImpl(strategies);
+    }
+
+    public void run() {
 
         try {
             // Parse arguments
-            final Arguments arguments = Parser.parse(args);
-            String pathname = arguments.getOutPath() + outputFileName;
+            final Arguments arguments = Parser.parse(this.arguments);
+            String pathname = arguments.getOutPath() + this.outputFileName;
             setUpLogger(pathname);
             logger.info("Arguments parsed successfully");
 
@@ -32,7 +47,7 @@ public abstract class GenericQuery {
             logger.info("Hazelcast instance created");
 
             // Get strategy for loading the data and running the query
-            final Strategy strategy = strategyMapper.getStrategy(arguments.getStrategy());
+            final Strategy strategy = this.strategyMapper.getStrategy(arguments.getStrategy());
             logger.info("Strategy selected: " + arguments.getStrategy());
 
             strategy.loadData(arguments, hz);
@@ -77,6 +92,6 @@ public abstract class GenericQuery {
     // This method dynamically configures the output log file.
     private void setUpLogger(String pathname) {
         System.setProperty("pathname", pathname);
-        this.logger = LoggerFactory.getLogger(GenericQuery.class);
+        this.logger = LoggerFactory.getLogger(BaseQuery.class);
     }
 }
