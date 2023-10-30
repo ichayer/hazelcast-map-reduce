@@ -52,7 +52,10 @@ public class Query3Default extends BaseStrategy {
 
     @Override
     protected Consumer<Trip> getTripsLambda(Arguments args, HazelcastInstance hz) {
-        return tripsList::add;
+        return trip -> {
+            if (trip.getOrigin() != trip.getDestination())
+                tripsList.add(trip);
+        };
     }
 
     @Override

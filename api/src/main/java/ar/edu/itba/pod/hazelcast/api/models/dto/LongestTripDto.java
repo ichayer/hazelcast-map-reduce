@@ -1,9 +1,12 @@
 package ar.edu.itba.pod.hazelcast.api.models.dto;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 public class LongestTripDto implements Dto, Comparable<LongestTripDto> {
+    private static final DateTimeFormatter printFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+
     private String startStationName;
     private String endStationName;
     private LocalDateTime startDate;
@@ -22,7 +25,7 @@ public class LongestTripDto implements Dto, Comparable<LongestTripDto> {
 
     @Override
     public String toCsv() {
-        return String.format("%s;%s;%s;%d", startStationName, endStationName, startDate.toString().replace('T', ' '), durationMinutes);
+        return String.format("%s;%s;%s;%d", startStationName, endStationName, startDate.format(printFormatter), durationMinutes);
     }
 
     @Override
