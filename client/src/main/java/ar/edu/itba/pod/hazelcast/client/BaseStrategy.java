@@ -31,7 +31,7 @@ public abstract class BaseStrategy implements Strategy {
             logger.info("Skipped loading stations, as not required by query strategy");
         } else {
             logger.info("Loading stations");
-            CsvHelper.readData(args.getInPath() + Constants.STATIONS_CSV, (fields, id) -> {
+            CsvHelper.readData(args.getInPath() + Constants.STATIONS_CSV, fields -> {
                 int stationPk = Integer.parseInt(fields[0]);
                 double latitude = Double.parseDouble(fields[2]);
                 double longitude = Double.parseDouble(fields[3]);
@@ -44,7 +44,7 @@ public abstract class BaseStrategy implements Strategy {
             logger.info("Skipped loading trips, as not required by query strategy");
         } else {
             logger.info("Loading trips");
-            CsvHelper.readData(args.getInPath() + Constants.TRIPS_CSV, (fields, id) -> {
+            CsvHelper.readData(args.getInPath() + Constants.TRIPS_CSV, fields -> {
                 LocalDateTime startDate = LocalDateTime.parse(fields[0].replace(' ', 'T'));
                 int startStation = Integer.parseInt(fields[1]);
                 LocalDateTime endDate = LocalDateTime.parse(fields[2].replace(' ', 'T'));

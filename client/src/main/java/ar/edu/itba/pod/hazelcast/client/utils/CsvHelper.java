@@ -9,7 +9,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public class CsvHelper {
 
@@ -32,14 +32,12 @@ public class CsvHelper {
         }
     }
 
-    public static void readData(String file, BiConsumer<String[], Integer> consumer) {
+    public static void readData(String file, Consumer<String[]> consumer) {
         CsvFileIterator fileIterator = new CsvFileIterator(file);
-        int id = 0;
         while (fileIterator.hasNext()) {
             String[] fields = fileIterator.next();
             if (fields.length == fileIterator.getColumns()) {
-                ++id;
-                consumer.accept(fields, id);
+                consumer.accept(fields);
             } else {
                 logger.error("Invalid line format, expected {} fileds but got {}", fileIterator.getColumns(), fields.length);
             }
