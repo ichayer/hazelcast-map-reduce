@@ -4,78 +4,84 @@ import ar.edu.itba.pod.hazelcast.api.combiners.DistanceCombinerFactory;
 import ar.edu.itba.pod.hazelcast.api.mappers.DistanceMapper;
 import ar.edu.itba.pod.hazelcast.api.models.dto.AverageDistanceDto;
 import ar.edu.itba.pod.hazelcast.api.models.Trip;
-import ar.edu.itba.pod.hazelcast.api.models.Coordinates;
 import ar.edu.itba.pod.hazelcast.api.models.Station;
-import ar.edu.itba.pod.hazelcast.api.reducers.AverageDistanceReducer;
+import ar.edu.itba.pod.hazelcast.api.models.dto.Dto;
+import ar.edu.itba.pod.hazelcast.api.reducers.AverageDistanceReducerFactory;
 import ar.edu.itba.pod.hazelcast.api.submitters.AverageDistanceSubmitter;
-import ar.edu.itba.pod.hazelcast.client.interfaces.Strategy;
+import ar.edu.itba.pod.hazelcast.client.BaseStrategy;
+import ar.edu.itba.pod.hazelcast.client.exceptions.IllegalClientArgumentException;
 import ar.edu.itba.pod.hazelcast.client.utils.Arguments;
 import ar.edu.itba.pod.hazelcast.client.utils.Constants;
-import ar.edu.itba.pod.hazelcast.client.utils.CsvHelper;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ICompletableFuture;
+import com.hazelcast.core.IList;
 import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 
 
-public class Query2Default implements Strategy {
-
-    private static final Logger logger = LoggerFactory.getLogger(Query2Default.class);
+public class Query2Default extends BaseStrategy {
     private static final String JOB_TRACKER_NAME = "top-n-stations";
+    private static final String COLLECTION_PREFIX = Constants.COLLECTION_PREFIX + "q2-";
+    private static final String STATIONS_MAP_NAME = COLLECTION_PREFIX + "stations";
+    private static final String TRIPS_LIST_NAME = COLLECTION_PREFIX + "trips";
+
+    private int limit;
+
+    private IMap<Integer, Station> stationMap;
+    private IList<Trip> tripsList;
 
     @Override
-    public void loadData(Arguments args, HazelcastInstance hz) {
-        IMap<Integer, Station> stationMap = hz.getMap(Constants.STATIONS_MAP);
-        stationMap.clear();
-        IMap<Integer, Trip> tripsMap = hz.getMap(Constants.TRIPS_MAP);
-        tripsMap.clear();
+    protected void initialize(Arguments args, HazelcastInstance hz) {
+        Integer limit1 = args.getLimit();
+        if (limit1 == null || limit1 <= 0)
+            throw new IllegalClientArgumentException("Must specify a limit greater than 0");
+        limit = limit1;
 
-        CsvHelper.readData(args.getInPath() + Constants.STATIONS_CSV, (fields, id) -> {
-            int stationPk = Integer.parseInt(fields[0]);
-            double latitude = Double.parseDouble(fields[2]);
-            double longitude = Double.parseDouble(fields[3]);
-            stationMap.put(stationPk, new Station(stationPk, fields[1], new Coordinates(latitude, longitude)));
-        });
-
-        CsvHelper.readData(args.getInPath() + Constants.TRIPS_CSV, (fields, id) -> {
-            int startStation = Integer.parseInt(fields[1]);
-            int endStation = Integer.parseInt(fields[3]);
-            boolean isMember = Integer.parseInt(fields[4]) != 0;
-            if (startStation != endStation && isMember) {
-                tripsMap.put(id, new Trip(null, null, startStation, endStation, isMember));
-            }
-        });
+        stationMap = hz.getMap(STATIONS_MAP_NAME);
+        tripsList = hz.getList(TRIPS_LIST_NAME);
     }
 
     @Override
-    public void runClient(Arguments arguments, HazelcastInstance hz) {
+    protected void clearCollections() {
+        stationMap.clear();
+        tripsList.clear();
+    }
+
+    @Override
+    protected Consumer<Station> getStationsLambda(Arguments args, HazelcastInstance hz) {
+        return station -> stationMap.put(station.getId(), station);
+    }
+
+    @Override
+    protected Consumer<Trip> getTripsLambda(Arguments args, HazelcastInstance hz) {
+        return trip -> {
+            if (trip.isMember())
+                tripsList.add(trip);
+        };
+    }
+
+    @Override
+    protected Collection<? extends Dto> runClientImpl(Arguments args, HazelcastInstance hz) throws ExecutionException, InterruptedException {
         final JobTracker jt = hz.getJobTracker(JOB_TRACKER_NAME);
-        final IMap<Integer, Trip> tripsIMap = hz.getMap(Constants.TRIPS_MAP);
-        final IMap<Integer, Station> stationIMap = hz.getMap(Constants.STATIONS_MAP);
-        final KeyValueSource<Integer, Trip> source = KeyValueSource.fromMap(tripsIMap);
-        final Job<Integer, Trip> job = jt.newJob(source);
+        final KeyValueSource<String, Trip> source = KeyValueSource.fromList(tripsList);
+        final Job<String, Trip> job = jt.newJob(source);
 
         final ICompletableFuture<SortedSet<AverageDistanceDto>> future = job
-                .mapper(new DistanceMapper())
+                .mapper(new DistanceMapper(STATIONS_MAP_NAME))
                 .combiner(new DistanceCombinerFactory())
-                .reducer(new AverageDistanceReducer())
-                .submit(new AverageDistanceSubmitter(arguments.getLimit(), stationIMap::get));
+                .reducer(new AverageDistanceReducerFactory())
+                .submit(new AverageDistanceSubmitter(limit, stationId -> stationMap.get(stationId).getName()));
 
-        try {
-            final SortedSet<AverageDistanceDto> result = future.get();
-            CsvHelper.printData(arguments.getOutPath() + Constants.QUERY2_OUTPUT_CSV, Constants.QUERY2_OUTPUT_CSV_HEADER, result);
-        } catch (Exception e) {
-            logger.error("Error waiting for the computation to complete and retrieve its result in query 2", e);
-        } finally {
-            tripsIMap.clear();
-            stationIMap.clear();
-        }
+        // TODO: Consider doing another strategy where instead of finding the top 10 via a submitter, the results of
+        // the map are re-loaded into a distributed map and a second mapreduce operation finds the top N
+
+        return future.get();
     }
 }

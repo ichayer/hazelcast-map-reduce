@@ -6,6 +6,11 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 
 public class Parser {
+
+    private Parser() {
+        throw new AssertionError();
+    }
+
     private static final Map<String, BiConsumer<String, Arguments.Builder>> OPTIONS = Map.ofEntries(
             Map.entry("-Daddresses", (argValue, argBuilder) -> argBuilder.addresses(argValue.substring(1, argValue.length() - 1).split(";"))),
             Map.entry("-DinPath", (argValue, argBuilder) -> argBuilder.inPath(argValue)),

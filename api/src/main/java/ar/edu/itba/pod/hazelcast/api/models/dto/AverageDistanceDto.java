@@ -1,41 +1,38 @@
 package ar.edu.itba.pod.hazelcast.api.models.dto;
 
-import ar.edu.itba.pod.hazelcast.api.models.Station;
-
 public class AverageDistanceDto implements Dto, Comparable<AverageDistanceDto> {
-
-    private Station station;
+    private String stationName;
     private double averageDistance;
 
     public AverageDistanceDto() {
 
     }
 
-    public AverageDistanceDto(final Station station, double averageDistance) {
-        this.station = station;
+    public AverageDistanceDto(String stationName, double averageDistance) {
+        this.stationName = stationName;
         this.averageDistance = Math.round(averageDistance * 100.0) / 100.0;
     }
 
     @Override
     public String toCsv() {
-        return station.getName() + ";" + averageDistance;
+        return stationName + ";" + averageDistance;
     }
 
     @Override
     public int compareTo(AverageDistanceDto o) {
         int compare = Double.compare(o.averageDistance, this.averageDistance);
         if(compare == 0) {
-            return String.CASE_INSENSITIVE_ORDER.compare(this.station.getName(), o.station.getName());
+            return String.CASE_INSENSITIVE_ORDER.compare(this.stationName, o.stationName);
         }
         return compare;
     }
 
-    public Station getStation() {
-        return station;
+    public String getStationName() {
+        return stationName;
     }
 
-    public void setStation(Station station) {
-        this.station = station;
+    public void setStationName(String stationName) {
+        this.stationName = stationName;
     }
 
     public double getAverageDistance() {

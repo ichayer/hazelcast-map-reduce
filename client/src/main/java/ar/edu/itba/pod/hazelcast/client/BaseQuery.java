@@ -1,13 +1,12 @@
 package ar.edu.itba.pod.hazelcast.client;
 
 import ar.edu.itba.pod.hazelcast.api.ConfigHandler;
+import ar.edu.itba.pod.hazelcast.api.models.dto.Dto;
 import ar.edu.itba.pod.hazelcast.client.exceptions.ClientException;
+import ar.edu.itba.pod.hazelcast.client.exceptions.QueryException;
 import ar.edu.itba.pod.hazelcast.client.interfaces.Strategy;
 import ar.edu.itba.pod.hazelcast.client.interfaces.StrategyMapper;
-import ar.edu.itba.pod.hazelcast.client.utils.Arguments;
-import ar.edu.itba.pod.hazelcast.client.utils.Constants;
-import ar.edu.itba.pod.hazelcast.client.utils.Parser;
-import ar.edu.itba.pod.hazelcast.client.utils.StrategyMapperImpl;
+import ar.edu.itba.pod.hazelcast.client.utils.*;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.client.config.ClientNetworkConfig;
@@ -16,30 +15,35 @@ import com.hazelcast.core.HazelcastInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-public abstract class BaseQuery {
+public class BaseQuery {
 
     private final String[] arguments;
-    private final String outputFileName;
+    private final String timeOutputFileName;
+    private final String queryOutputFileName;
+    private final String resultHeader;
     private final StrategyMapper strategyMapper;
     private Logger logger;
 
-    BaseQuery(String[] arguments, String outputFileName, Map<String, Supplier<Strategy>> strategies) {
+    BaseQuery(String[] arguments, String queryName, String resultHeader, Map<String, Supplier<Strategy>> strategies) {
         this.arguments = Objects.requireNonNull(arguments);
-        this.outputFileName = Objects.requireNonNull(outputFileName);
+        queryName = Objects.requireNonNull(queryName);
+        this.timeOutputFileName = String.format("time%s.txt", queryName);
+        this.queryOutputFileName = String.format("query%s.csv", queryName);
+        this.resultHeader = Objects.requireNonNull(resultHeader);
         this.strategyMapper = new StrategyMapperImpl(strategies);
     }
 
     public void run() {
-
         try {
             // Parse arguments
             final Arguments arguments = Parser.parse(this.arguments);
-            String pathname = arguments.getOutPath() + this.outputFileName;
-            setUpLogger(pathname);
+            String timeOutputFilePath = String.format("%s/%s", arguments.getOutPath(), this.timeOutputFileName);
+            setUpLogger(timeOutputFilePath);
             logger.info("Arguments parsed successfully");
 
             // Hazelcast instance setup
@@ -53,10 +57,14 @@ public abstract class BaseQuery {
             strategy.loadData(arguments, hz);
             logger.info("Data loaded successfully");
 
-            strategy.runClient(arguments, hz);
+            Collection<? extends Dto> result = strategy.runClient(arguments, hz);
+            String queryOutputFilePath = String.format("%s/%s", arguments.getOutPath(), this.queryOutputFileName);
+            CsvHelper.printData(queryOutputFilePath, resultHeader, result);
             logger.info("Query executed successfully");
 
             logger.info("Shutting down Hazelcast instance");
+        } catch (QueryException e) {
+            logger.error("Error waiting for the computation to complete and retrieve its result in query", e.getCause());
         } catch (ClientException e) {
             setUpLogger(Constants.DEFAULT_PATHNAME);
             logger.error("Client error: " + e.getMessage(), e);

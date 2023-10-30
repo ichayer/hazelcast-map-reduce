@@ -8,10 +8,10 @@ import ar.edu.itba.pod.hazelcast.client.utils.StrategyMapperImpl;
 
 public class Query2 {
     public static void main(String[] args) {
-
         BaseQuery query = new QueryBuilder.Builder()
                 .setArguments(args)
-                .setOutputFileName(Constants.QUERY2_OUTPUT_TXT)
+                .setQueryName("2")
+                .setResultHeader(Constants.QUERY2_OUTPUT_CSV_HEADER)
                 .setStrategy(StrategyMapperImpl.DEFAULT_STRATEGY, Query2Default::new)
                 .build();
 

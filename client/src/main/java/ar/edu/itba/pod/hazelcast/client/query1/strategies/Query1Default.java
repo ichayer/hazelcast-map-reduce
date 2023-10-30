@@ -1,86 +1,72 @@
 package ar.edu.itba.pod.hazelcast.client.query1.strategies;
 
 import ar.edu.itba.pod.hazelcast.api.mappers.TripsCountMapper;
-import ar.edu.itba.pod.hazelcast.api.models.Coordinates;
 import ar.edu.itba.pod.hazelcast.api.models.Station;
+import ar.edu.itba.pod.hazelcast.api.models.Trip;
+import ar.edu.itba.pod.hazelcast.api.models.dto.Dto;
 import ar.edu.itba.pod.hazelcast.api.models.dto.TripsCountDto;
 import ar.edu.itba.pod.hazelcast.api.reducers.TripsCountReducerFactory;
 import ar.edu.itba.pod.hazelcast.api.submitters.TripsCountSubmitter;
 import ar.edu.itba.pod.hazelcast.client.BaseStrategy;
-import ar.edu.itba.pod.hazelcast.client.interfaces.Strategy;
 import ar.edu.itba.pod.hazelcast.client.utils.Arguments;
 import ar.edu.itba.pod.hazelcast.client.utils.Constants;
-import ar.edu.itba.pod.hazelcast.client.utils.CsvHelper;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.ICompletableFuture;
+import com.hazelcast.core.IList;
 import com.hazelcast.core.IMap;
 import com.hazelcast.mapreduce.Job;
 import com.hazelcast.mapreduce.JobTracker;
 import com.hazelcast.mapreduce.KeyValueSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.AbstractMap;
+import java.util.Collection;
 import java.util.Map;
 import java.util.SortedSet;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 
 public class Query1Default extends BaseStrategy {
-
-    private static final Logger logger = LoggerFactory.getLogger(Query1Default.class);
     private static final String JOB_TRACKER_NAME = "travel-count";
-    private IMap<Integer, Station> stationIMap;
-    private IMap<Integer, Map.Entry<Integer, Integer>> tripsIMap;
+    private static final String COLLECTION_PREFIX = Constants.COLLECTION_PREFIX + "q1-";
+    private static final String STATIONS_MAP_NAME = COLLECTION_PREFIX + "stations";
+    private static final String TRIPS_LIST_NAME = COLLECTION_PREFIX + "trips";
 
-    public Query1Default() {
-        super(Constants.STATIONS_MAP, Constants.TRIPS_MAP);
+    private IMap<Integer, String> stationMap;
+    private IList<AbstractMap.SimpleEntry<Integer, Integer>> tripsList;
+
+    @Override
+    protected void initialize(Arguments args, HazelcastInstance hz) {
+        stationMap = hz.getMap(STATIONS_MAP_NAME);
+        tripsList = hz.getList(TRIPS_LIST_NAME);
     }
 
     @Override
-    protected void clearIMaps(HazelcastInstance hz) {
-        this.stationIMap = getStationsIMap(hz);
-        stationIMap.clear();
-        this.tripsIMap = getTripsMap(hz);
-        tripsIMap.clear();
+    protected void clearCollections() {
+        stationMap.clear();
+        tripsList.clear();
     }
 
     @Override
-    protected void loadStationsFromCsv(String filePath) {
-        CsvHelper.readData(filePath, (fields, id) -> {
-            int stationPk = Integer.parseInt(fields[0]);
-            double latitude = Double.parseDouble(fields[2]);
-            double longitude = Double.parseDouble(fields[3]);
-            this.stationIMap.put(stationPk, new Station(stationPk, fields[1], new Coordinates(latitude, longitude)));
-        });
+    protected Consumer<Station> getStationsLambda(Arguments args, HazelcastInstance h) {
+        return station -> stationMap.put(station.getId(), station.getName());
     }
 
     @Override
-    protected void loadTripsFromCsv(String filePath) {
-        CsvHelper.readData(filePath, (fields, id) -> {
-            int startStation = Integer.parseInt(fields[1]);
-            int endStation = Integer.parseInt(fields[3]);
-            this.tripsIMap.put(id, new AbstractMap.SimpleEntry<>(startStation, endStation));
-        });
+    protected Consumer<Trip> getTripsLambda(Arguments args, HazelcastInstance h) {
+        return trip -> tripsList.add(new AbstractMap.SimpleEntry<>(trip.getOrigin(), trip.getDestination()));
     }
 
     @Override
-    public void runClient(Arguments arguments, HazelcastInstance hz) {
+    protected Collection<? extends Dto> runClientImpl(Arguments args, HazelcastInstance hz) throws ExecutionException, InterruptedException {
         final JobTracker jt = hz.getJobTracker(JOB_TRACKER_NAME);
-        final KeyValueSource<Integer, Map.Entry<Integer, Integer>> source = KeyValueSource.fromMap(this.tripsIMap);
-        final Job<Integer, Map.Entry<Integer, Integer>> job = jt.newJob(source);
+        final KeyValueSource<String, Map.Entry<Integer, Integer>> source = KeyValueSource.fromList(tripsList);
+        final Job<String, Map.Entry<Integer, Integer>> job = jt.newJob(source);
 
         final ICompletableFuture<SortedSet<TripsCountDto>> future = job
                 .mapper(new TripsCountMapper())
                 .reducer(new TripsCountReducerFactory())
-                .submit(new TripsCountSubmitter(this.stationIMap::get));
+                .submit(new TripsCountSubmitter(stationMap::get));
 
-        try {
-            final SortedSet<TripsCountDto> result = future.get();
-            CsvHelper.printData(arguments.getOutPath() + Constants.QUERY1_OUTPUT_CSV, Constants.QUERY1_OUTPUT_CSV_HEADER, result);
-        } catch (Exception e) {
-            logger.error("Error waiting for the computation to complete and retrieve its result in query 1", e);
-        } finally {
-            this.stationIMap.clear();
-            this.tripsIMap.clear();
-        }
+        return future.get();
     }
 }

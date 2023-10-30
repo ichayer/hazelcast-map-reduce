@@ -18,7 +18,12 @@ public class Arguments {
     private Arguments(Builder builder) {
         this.addresses = builder.addresses;
         this.inPath = builder.inPath;
-        this.outPath = builder.outPath;
+
+        String outPath1 = builder.outPath;
+        if (outPath1.endsWith("/"))
+            outPath1 = outPath1.substring(0, outPath1.length() - 1);
+        this.outPath = outPath1;
+
         this.startDate = builder.startDate;
         this.endDate = builder.endDate;
         this.limit = builder.limit;

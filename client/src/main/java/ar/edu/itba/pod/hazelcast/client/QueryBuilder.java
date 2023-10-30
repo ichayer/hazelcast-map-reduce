@@ -6,16 +6,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public class QueryBuilder extends BaseQuery {
-
-    private QueryBuilder(Builder builder) {
-        super(builder.arguments, builder.outputFileName, builder.strategies);
+public class QueryBuilder {
+    private QueryBuilder() {
+        throw new AssertionError();
     }
 
     public static class Builder {
-
         private String[] arguments = null;
-        private String outputFileName = null;
+        private String queryName = null;
+        private String resultHeader;
         private final Map<String, Supplier<Strategy>> strategies = new HashMap<>();
 
         public Builder setArguments(String[] arguments) {
@@ -23,8 +22,13 @@ public class QueryBuilder extends BaseQuery {
             return this;
         }
 
-        public Builder setOutputFileName(String outputFileName) {
-            this.outputFileName = outputFileName;
+        public Builder setQueryName(String queryName) {
+            this.queryName = queryName;
+            return this;
+        }
+
+        public Builder setResultHeader(String resultHeader) {
+            this.resultHeader = resultHeader;
             return this;
         }
 
@@ -34,7 +38,7 @@ public class QueryBuilder extends BaseQuery {
         }
 
         public BaseQuery build() {
-            return new QueryBuilder(this);
+            return new BaseQuery(arguments, queryName, resultHeader, strategies);
         }
     }
 }

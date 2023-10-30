@@ -5,10 +5,10 @@ import com.hazelcast.mapreduce.Mapper;
 
 import java.util.Map;
 
-public class TripsCountMapper implements Mapper<Integer, Map.Entry<Integer, Integer>, Map.Entry<Integer, Integer>, Integer> {
+public class TripsCountMapper implements Mapper<String, Map.Entry<Integer, Integer>, Map.Entry<Integer, Integer>, Integer> {
 
     @Override
-    public void map(Integer integer, Map.Entry<Integer, Integer> integerIntegerEntry, Context<Map.Entry<Integer, Integer>, Integer> context) {
+    public void map(String key, Map.Entry<Integer, Integer> integerIntegerEntry, Context<Map.Entry<Integer, Integer>, Integer> context) {
         context.emit(integerIntegerEntry, 1);
     }
 }
