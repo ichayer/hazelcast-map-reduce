@@ -3,10 +3,11 @@ package ar.edu.itba.pod.hazelcast.client.query4.strategies;
 import ar.edu.itba.pod.hazelcast.api.combiners.AffluxPerStationCombinerFactory;
 import ar.edu.itba.pod.hazelcast.api.combiners.BikeAffluxPerStationDayCombinerFactory;
 import ar.edu.itba.pod.hazelcast.api.mappers.AffluxPerStationMapper;
-import ar.edu.itba.pod.hazelcast.api.mappers.BikeAffluxPerStationDayMapper;
+import ar.edu.itba.pod.hazelcast.api.mappers.TripEndMapper;
 import ar.edu.itba.pod.hazelcast.api.models.Station;
 import ar.edu.itba.pod.hazelcast.api.models.StationIdAndDate;
 import ar.edu.itba.pod.hazelcast.api.models.Trip;
+import ar.edu.itba.pod.hazelcast.api.models.TripEnd;
 import ar.edu.itba.pod.hazelcast.api.models.dto.AffluxCountDto;
 import ar.edu.itba.pod.hazelcast.api.models.dto.Dto;
 import ar.edu.itba.pod.hazelcast.api.reducers.AffluxPerStationReducerFactory;
@@ -32,7 +33,7 @@ import java.util.SortedSet;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
-public class Query4Default extends BaseStrategy {
+public class Query4TripEndsOnly extends BaseStrategy {
     private static final String JOB_TRACKER_NAME_1 = "afflux-days-1";
     private static final String JOB_TRACKER_NAME_2 = "afflux-days-2";
     private static final String COLLECTION_PREFIX = Constants.COLLECTION_PREFIX + "q4-";
@@ -44,7 +45,7 @@ public class Query4Default extends BaseStrategy {
     private LocalDate endDate;
 
     private IMap<Integer, String> stationMap;
-    private IList<Trip> tripsList;
+    private IList<TripEnd> tripEndsList;
     private IMap<StationIdAndDate, Integer> middleMap;
 
     @Override
@@ -58,14 +59,14 @@ public class Query4Default extends BaseStrategy {
             throw new IllegalClientArgumentException("endDate must be equal or later than startDate");
 
         stationMap = hz.getMap(STATIONS_MAP_NAME);
-        tripsList = hz.getList(TRIPS_LIST_NAME);
+        tripEndsList = hz.getList(TRIPS_LIST_NAME);
         middleMap = hz.getMap(MIDDLE_MAP_NAME);
     }
 
     @Override
     protected void clearCollections() {
         stationMap.clear();
-        tripsList.clear();
+        tripEndsList.clear();
         middleMap.clear();
     }
 
@@ -80,8 +81,13 @@ public class Query4Default extends BaseStrategy {
             LocalDate tripStartDate = trip.getStartDateTime().toLocalDate();
             LocalDate tripEndDate = trip.getEndDateTime().toLocalDate();
 
-            if ((!tripStartDate.isBefore(startDate) && !tripStartDate.isAfter(endDate)) || (!tripEndDate.isBefore(startDate) && !tripEndDate.isAfter(endDate)))
-                tripsList.add(trip);
+            // if (tripStartDate >= startDate && tripStartDate <= endDate)
+            if (!tripStartDate.isBefore(startDate) && !tripStartDate.isAfter(endDate))
+                tripEndsList.add(new TripEnd(trip.getOrigin(), tripStartDate, -1));
+
+            // if (tripEndDate >= startDate && tripEndDate <= endDate)
+            if (!tripEndDate.isBefore(startDate) && !tripEndDate.isAfter(endDate))
+                tripEndsList.add(new TripEnd(trip.getDestination(), tripEndDate, 1));
         };
     }
 
@@ -90,11 +96,11 @@ public class Query4Default extends BaseStrategy {
         int totalDays = (int) ChronoUnit.DAYS.between(startDate, endDate) + 1;
 
         final JobTracker jt1 = hz.getJobTracker(JOB_TRACKER_NAME_1);
-        final KeyValueSource<String, Trip> source1 = KeyValueSource.fromList(tripsList);
-        final Job<String, Trip> job1 = jt1.newJob(source1);
+        final KeyValueSource<String, TripEnd> source1 = KeyValueSource.fromList(tripEndsList);
+        final Job<String, TripEnd> job1 = jt1.newJob(source1);
 
         final ICompletableFuture<Map<StationIdAndDate, Integer>> future1 = job1
-                .mapper(new BikeAffluxPerStationDayMapper(startDate, endDate))
+                .mapper(new TripEndMapper())
                 .combiner(new BikeAffluxPerStationDayCombinerFactory())
                 .reducer(new BikeAffluxPerStationDayReducerFactory())
                 .submit();

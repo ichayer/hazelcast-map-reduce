@@ -28,9 +28,9 @@ public abstract class BaseStrategy implements Strategy {
 
         Consumer<Station> stationConsumer = getStationsLambda(args, hz);
         if (stationConsumer == null) {
-            logger.info("Skipped loading stations, as not required by query strategy");
+            logger.debug("Skipped loading stations, as not required by query strategy");
         } else {
-            logger.info("Loading stations");
+            logger.debug("Loading stations");
             CsvHelper.readData(args.getInPath() + Constants.STATIONS_CSV, fields -> {
                 int stationPk = Integer.parseInt(fields[0]);
                 double latitude = Double.parseDouble(fields[2]);
@@ -41,9 +41,9 @@ public abstract class BaseStrategy implements Strategy {
 
         Consumer<Trip> tripConsumer = getTripsLambda(args, hz);
         if (tripConsumer == null) {
-            logger.info("Skipped loading trips, as not required by query strategy");
+            logger.debug("Skipped loading trips, as not required by query strategy");
         } else {
-            logger.info("Loading trips");
+            logger.debug("Loading trips");
             CsvHelper.readData(args.getInPath() + Constants.TRIPS_CSV, fields -> {
                 LocalDateTime startDate = LocalDateTime.parse(fields[0].replace(' ', 'T'));
                 int startStation = Integer.parseInt(fields[1]);
