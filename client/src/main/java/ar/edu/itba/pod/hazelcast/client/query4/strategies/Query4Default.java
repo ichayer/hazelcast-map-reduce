@@ -96,9 +96,7 @@ public class Query4Default extends BaseStrategy {
                 .reducer(new BikeAffluxPerStationDayReducerFactory())
                 .submit();
 
-
         final Map<StationIdAndDate, Integer> result1 = future1.get();
-        middleMap.clear();
         middleMap.putAll(result1);
 
         final JobTracker jt2 = hz.getJobTracker(JOB_TRACKER_NAME_2);
