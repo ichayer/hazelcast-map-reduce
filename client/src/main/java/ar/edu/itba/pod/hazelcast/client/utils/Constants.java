@@ -14,7 +14,7 @@ public final class Constants {
     public static final String QUERY3_OUTPUT_CSV_HEADER = "start_station;end_station;start_date;minutes";
     public static final String QUERY4_OUTPUT_CSV_HEADER = "station;pos_afflux;neutral_afflux;negative_afflux";
 
-    public static final String DEFAULT_PATHNAME =  "pathname";
+    public static final String DEFAULT_PATHNAME = "pathname";
 
     // Suppress default constructor for noninstantiability
     private Constants() {

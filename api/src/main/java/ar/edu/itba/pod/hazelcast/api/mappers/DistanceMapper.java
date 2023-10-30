@@ -1,7 +1,7 @@
 package ar.edu.itba.pod.hazelcast.api.mappers;
 
-import ar.edu.itba.pod.hazelcast.api.models.Trip;
 import ar.edu.itba.pod.hazelcast.api.models.Station;
+import ar.edu.itba.pod.hazelcast.api.models.Trip;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.HazelcastInstanceAware;
 import com.hazelcast.core.IMap;

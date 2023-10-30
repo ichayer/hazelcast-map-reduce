@@ -2,9 +2,9 @@ package ar.edu.itba.pod.hazelcast.client.query2.strategies;
 
 import ar.edu.itba.pod.hazelcast.api.combiners.DistanceCombinerFactory;
 import ar.edu.itba.pod.hazelcast.api.mappers.DistanceMapper;
-import ar.edu.itba.pod.hazelcast.api.models.dto.AverageDistanceDto;
-import ar.edu.itba.pod.hazelcast.api.models.Trip;
 import ar.edu.itba.pod.hazelcast.api.models.Station;
+import ar.edu.itba.pod.hazelcast.api.models.Trip;
+import ar.edu.itba.pod.hazelcast.api.models.dto.AverageDistanceDto;
 import ar.edu.itba.pod.hazelcast.api.models.dto.Dto;
 import ar.edu.itba.pod.hazelcast.api.reducers.AverageDistanceReducerFactory;
 import ar.edu.itba.pod.hazelcast.api.submitters.AverageDistanceSubmitter;

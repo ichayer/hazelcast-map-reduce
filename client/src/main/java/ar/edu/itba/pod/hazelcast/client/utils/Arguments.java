@@ -107,6 +107,7 @@ public class Arguments {
         }
 
         private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
         private static LocalDate parseDate(String date) {
             return LocalDate.parse(date, dateTimeFormatter);
         }
@@ -117,7 +118,7 @@ public class Arguments {
         }
 
         public Builder endDate(String endDate) {
-            this.endDate =  parseDate(endDate);
+            this.endDate = parseDate(endDate);
             return this;
         }
 

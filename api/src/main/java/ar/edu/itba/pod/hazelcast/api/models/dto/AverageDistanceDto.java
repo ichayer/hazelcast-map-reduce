@@ -21,7 +21,7 @@ public class AverageDistanceDto implements Dto, Comparable<AverageDistanceDto> {
     @Override
     public int compareTo(AverageDistanceDto o) {
         int compare = Double.compare(o.averageDistance, this.averageDistance);
-        if(compare == 0) {
+        if (compare == 0) {
             return String.CASE_INSENSITIVE_ORDER.compare(this.stationName, o.stationName);
         }
         return compare;

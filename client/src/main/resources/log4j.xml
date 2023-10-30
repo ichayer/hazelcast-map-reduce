@@ -11,13 +11,13 @@
 
     <appender name="fileAppender" class="org.apache.log4j.FileAppender">
         <param name="File" value="${pathname}"/>
-        <param name="Append" value="false" />
+        <param name="Append" value="false"/>
         <layout class="org.apache.log4j.PatternLayout">
             <param name="ConversionPattern" value="%d{dd/MM/yyyy HH:mm:ss:SSSS} %-5p %c{1}:%L - %m%n"/>
         </layout>
         <filter class="org.apache.log4j.varia.LevelMatchFilter">
-            <param name="LevelToMatch" value="INFO" />
-            <param name="AcceptOnMatch" value="true" />
+            <param name="LevelToMatch" value="INFO"/>
+            <param name="AcceptOnMatch" value="true"/>
         </filter>
     </appender>
 
