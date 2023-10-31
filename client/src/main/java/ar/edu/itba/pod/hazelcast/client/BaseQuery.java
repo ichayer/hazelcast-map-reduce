@@ -23,7 +23,7 @@ import java.util.function.Supplier;
 public class BaseQuery {
 
     private final Arguments arguments;
-    private final String queryOutputFileName;
+    private final String queryOutputFilePath;
     private final String resultHeader;
     private final StrategyMapper strategyMapper;
     private Logger logger;
@@ -34,9 +34,8 @@ public class BaseQuery {
         this.strategyMapper = new StrategyMapperImpl(strategies);
 
         queryName = Objects.requireNonNull(queryName);
-        this.queryOutputFileName = String.format(Constants.QUERY_OUTPUT_FILE_NAME, queryName);
-        String timeOutputFileName = String.format(Constants.TIME_OUTPUT_FILE_NAME, queryName);
-        String timeOutputFilePath = String.format("%s/%s", arguments.getOutPath(), timeOutputFileName);
+        this.queryOutputFilePath = buildQueryOutputFilePath(queryName);
+        String timeOutputFilePath = buildTimeOutputFilePath(queryName);
         setUpLogger(timeOutputFilePath);
     }
 
@@ -58,7 +57,6 @@ public class BaseQuery {
             Collection<? extends Dto> result = strategy.runClient(arguments, hz);
             logger.info("End of map/reduce job");
 
-            String queryOutputFilePath = String.format("%s/%s", arguments.getOutPath(), this.queryOutputFileName);
             CsvHelper.printData(queryOutputFilePath, resultHeader, result);
             logger.info("Query results were obtained successfully");
 
@@ -99,5 +97,18 @@ public class BaseQuery {
     private void setUpLogger(String pathname) {
         System.setProperty(Constants.LOG4J_PARAM_NAME, pathname);
         this.logger = LoggerFactory.getLogger(BaseQuery.class);
+    }
+
+    private String buildOutputFilePath(String queryName, String fileNameFormat) {
+        String outputFileName = String.format(fileNameFormat, queryName);
+        return String.format("%s/%s", arguments.getOutPath(), outputFileName);
+    }
+
+    private String buildTimeOutputFilePath(String queryName) {
+        return buildOutputFilePath(queryName, Constants.TIME_OUTPUT_FILE_NAME);
+    }
+
+    private String buildQueryOutputFilePath(String queryName) {
+        return buildOutputFilePath(queryName, Constants.QUERY_OUTPUT_FILE_NAME);
     }
 }
