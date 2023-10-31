@@ -19,8 +19,15 @@ public class DistanceMapper implements Mapper<String, Trip, Station, Double>, Ha
     @Override
     public void map(String key, Trip trip, Context<Station, Double> context) {
         final IMap<Integer, Station> map = hazelcastInstance.getMap(mapName);
+
         final Station origin = map.get(trip.getOrigin());
+        if (origin == null)
+            return;
+
         final Station destination = map.get(trip.getDestination());
+        if (destination == null)
+            return;
+
         context.emit(origin, origin.getCoordinates().distanceTo(destination.getCoordinates()));
     }
 
