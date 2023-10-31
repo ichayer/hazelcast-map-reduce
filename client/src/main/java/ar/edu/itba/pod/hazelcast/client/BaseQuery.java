@@ -50,13 +50,17 @@ public class BaseQuery {
             final Strategy strategy = this.strategyMapper.getStrategy(arguments.getStrategy());
             logger.info("Strategy selected: " + arguments.getStrategy());
 
+            logger.info("Start of file reading");
             strategy.loadData(arguments, hz);
-            logger.info("Data loaded successfully");
+            logger.info("End of file reading");
 
+            logger.info("Start of map/reduce job");
             Collection<? extends Dto> result = strategy.runClient(arguments, hz);
+            logger.info("End of map/reduce job");
+
             String queryOutputFilePath = String.format("%s/%s", arguments.getOutPath(), this.queryOutputFileName);
             CsvHelper.printData(queryOutputFilePath, resultHeader, result);
-            logger.info("Query executed successfully");
+            logger.info("Query results were obtained successfully");
 
             logger.info("Shutting down Hazelcast instance");
         } catch (QueryException e) {
