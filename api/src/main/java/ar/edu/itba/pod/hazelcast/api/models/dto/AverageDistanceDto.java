@@ -10,12 +10,12 @@ public class AverageDistanceDto implements Dto, Comparable<AverageDistanceDto> {
 
     public AverageDistanceDto(String stationName, double averageDistance) {
         this.stationName = stationName;
-        this.averageDistance = Math.round(averageDistance * 100.0) / 100.0;
+        this.averageDistance = averageDistance;
     }
 
     @Override
     public String toCsv() {
-        return stationName + ";" + averageDistance;
+        return String.format("%s;%.2f", stationName, averageDistance);
     }
 
     @Override
