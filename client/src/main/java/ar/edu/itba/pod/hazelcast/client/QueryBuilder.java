@@ -1,12 +1,14 @@
 package ar.edu.itba.pod.hazelcast.client;
 
 import ar.edu.itba.pod.hazelcast.client.interfaces.Strategy;
+import ar.edu.itba.pod.hazelcast.client.utils.Parser;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
 public class QueryBuilder {
+
     private QueryBuilder() {
         throw new AssertionError();
     }
@@ -38,7 +40,7 @@ public class QueryBuilder {
         }
 
         public BaseQuery build() {
-            return new BaseQuery(arguments, queryName, resultHeader, strategies);
+            return new BaseQuery(Parser.parse(this.arguments), queryName, resultHeader, strategies);
         }
     }
 }

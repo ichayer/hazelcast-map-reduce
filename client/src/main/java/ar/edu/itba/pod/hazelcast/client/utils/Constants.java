@@ -11,7 +11,10 @@ public final class Constants {
     public static final String QUERY3_OUTPUT_CSV_HEADER = "start_station;end_station;start_date;minutes";
     public static final String QUERY4_OUTPUT_CSV_HEADER = "station;pos_afflux;neutral_afflux;negative_afflux";
 
-    public static final String DEFAULT_PATHNAME = "pathname";
+    public static final String QUERY_OUTPUT_FILE_NAME = "query%s.csv";
+    public static final String TIME_OUTPUT_FILE_NAME = "time%s.txt";
+
+    public static final String LOG4J_PARAM_NAME = "pathname";
 
     // Suppress default constructor for noninstantiability
     private Constants() {

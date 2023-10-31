@@ -22,30 +22,26 @@ import java.util.function.Supplier;
 
 public class BaseQuery {
 
-    private final String[] arguments;
-    private final String timeOutputFileName;
+    private final Arguments arguments;
     private final String queryOutputFileName;
     private final String resultHeader;
     private final StrategyMapper strategyMapper;
     private Logger logger;
 
-    BaseQuery(String[] arguments, String queryName, String resultHeader, Map<String, Supplier<Strategy>> strategies) {
+    BaseQuery(Arguments arguments, String queryName, String resultHeader, Map<String, Supplier<Strategy>> strategies) {
         this.arguments = Objects.requireNonNull(arguments);
-        queryName = Objects.requireNonNull(queryName);
-        this.timeOutputFileName = String.format("time%s.txt", queryName);
-        this.queryOutputFileName = String.format("query%s.csv", queryName);
         this.resultHeader = Objects.requireNonNull(resultHeader);
         this.strategyMapper = new StrategyMapperImpl(strategies);
+
+        queryName = Objects.requireNonNull(queryName);
+        this.queryOutputFileName = String.format(Constants.QUERY_OUTPUT_FILE_NAME, queryName);
+        String timeOutputFileName = String.format(Constants.TIME_OUTPUT_FILE_NAME, queryName);
+        String timeOutputFilePath = String.format("%s/%s", arguments.getOutPath(), timeOutputFileName);
+        setUpLogger(timeOutputFilePath);
     }
 
     public void run() {
         try {
-            // Parse arguments
-            final Arguments arguments = Parser.parse(this.arguments);
-            String timeOutputFilePath = String.format("%s/%s", arguments.getOutPath(), this.timeOutputFileName);
-            setUpLogger(timeOutputFilePath);
-            logger.info("Arguments parsed successfully");
-
             // Hazelcast instance setup
             final HazelcastInstance hz = setup(arguments.getAddresses());
             logger.info("Hazelcast instance created");
@@ -66,10 +62,8 @@ public class BaseQuery {
         } catch (QueryException e) {
             logger.error("Error waiting for the computation to complete and retrieve its result in query", e.getCause());
         } catch (ClientException e) {
-            setUpLogger(Constants.DEFAULT_PATHNAME);
             logger.error("Client error: " + e.getMessage(), e);
         } catch (Exception e) {
-            setUpLogger(Constants.DEFAULT_PATHNAME);
             logger.error("Unknown error: {}", e.getMessage(), e);
         } finally {
             HazelcastClient.shutdownAll();
@@ -99,7 +93,7 @@ public class BaseQuery {
 
     // This method dynamically configures the output log file.
     private void setUpLogger(String pathname) {
-        System.setProperty("pathname", pathname);
+        System.setProperty(Constants.LOG4J_PARAM_NAME, pathname);
         this.logger = LoggerFactory.getLogger(BaseQuery.class);
     }
 }
