@@ -1,4 +1,4 @@
-package ar.edu.itba.pod.hazelcast.api.prdicates;
+package ar.edu.itba.pod.hazelcast.api.predicates;
 
 import ar.edu.itba.pod.hazelcast.api.models.Trip;
 import com.hazelcast.mapreduce.KeyPredicate;
