@@ -1,5 +1,6 @@
 package ar.edu.itba.pod.hazelcast.client.query1.strategies;
 
+import ar.edu.itba.pod.hazelcast.api.combiners.TripsCountCombinerFactory;
 import ar.edu.itba.pod.hazelcast.api.mappers.TripsCountMapper;
 import ar.edu.itba.pod.hazelcast.api.models.Station;
 import ar.edu.itba.pod.hazelcast.api.models.Trip;
@@ -64,6 +65,7 @@ public class Query1Default extends BaseStrategy {
 
         final ICompletableFuture<SortedSet<TripsCountDto>> future = job
                 .mapper(new TripsCountMapper())
+                .combiner(new TripsCountCombinerFactory())
                 .reducer(new TripsCountReducerFactory())
                 .submit(new TripsCountSubmitter(stationMap::get));
 
