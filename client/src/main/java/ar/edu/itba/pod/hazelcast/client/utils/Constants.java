@@ -3,9 +3,6 @@ package ar.edu.itba.pod.hazelcast.client.utils;
 public final class Constants {
     public static final String COLLECTION_PREFIX = "g4-";
 
-    public static final String TRIPS_MAP = COLLECTION_PREFIX + "TripsMap";
-    public static final String TRIPS_LIST = COLLECTION_PREFIX + "TripsList";
-    public static final String STATIONS_MAP = COLLECTION_PREFIX + "StationsMap";
     public static final String TRIPS_CSV = "/bikes.csv";
     public static final String STATIONS_CSV = "/stations.csv";
 
