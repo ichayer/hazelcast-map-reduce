@@ -3,7 +3,7 @@ package ar.edu.itba.pod.hazelcast.client.query4;
 import ar.edu.itba.pod.hazelcast.client.BaseQuery;
 import ar.edu.itba.pod.hazelcast.client.QueryBuilder;
 import ar.edu.itba.pod.hazelcast.client.query4.strategies.Query4Default;
-import ar.edu.itba.pod.hazelcast.client.query4.strategies.Query4TripEndsOnly;
+import ar.edu.itba.pod.hazelcast.client.query4.strategies.Query4FromStations;
 import ar.edu.itba.pod.hazelcast.client.utils.Constants;
 import ar.edu.itba.pod.hazelcast.client.utils.StrategyMapperImpl;
 
@@ -14,7 +14,7 @@ public class Query4 {
                 .setQueryName("4")
                 .setResultHeader(Constants.QUERY4_OUTPUT_CSV_HEADER)
                 .setStrategy(StrategyMapperImpl.DEFAULT_STRATEGY, Query4Default::new)
-                .setStrategy("TripEndsOnly", Query4TripEndsOnly::new)
+                .setStrategy("FromStations", Query4FromStations::new)
                 .build();
 
         query.run();
