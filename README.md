@@ -25,7 +25,9 @@ Extract `tar.gz` from `target` folders:
 ```bash
 mkdir -p tmp/csv && find . -name '*tar.gz' -exec tar -C tmp -xzf {} \;
 find . -path './tmp/tpe2-g4-*/*' -exec chmod u+x {} \;
+find tmp -type d -name 'tpe2-g4-*' -exec cp config.json {} \;
 ```
+
 This will extract the generated `.tar.gz` files, storing them in a temporary directory `./tmp`, and grant execution permissions to both the client and server `.sh` files. It will also create a `csv` folder to place CSVs in it.
 
 Sample scripts are provided in the `scripts` folder. Update script flags values to match your environment.
