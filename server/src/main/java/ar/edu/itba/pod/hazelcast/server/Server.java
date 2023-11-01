@@ -14,12 +14,8 @@ public class Server {
     private static final Logger logger = LoggerFactory.getLogger(Server.class);
 
     public static void main(String[] args) {
-        if (args.length == 0) {
-            logger.error("Attempted to initialize Hazelcast server without selecting a network interface");
-            throw new IllegalArgumentException("No network interface provided");
-        }
 
-        String networkInterface = args[0];
+        String networkInterface = getNetworkInterface(args);
 
         logger.info("Creating node");
 
@@ -63,5 +59,21 @@ public class Server {
         // Create new node
         Hazelcast.newHazelcastInstance(config);
         logger.info("Node created successfully");
+    }
+
+    private static String getNetworkInterface(String[] args) {
+        for (String arg : args) {
+            if (arg.startsWith("-Daddresses=")) {
+                String[] parts = arg.split("=");
+                if(parts.length == 2) {
+                    String ipAddress = parts[1].substring(1, parts[1].length() - 1);
+                    logger.info("Network interface provided:" + ipAddress);
+                    return ipAddress;
+                }
+                break;
+            }
+        }
+        logger.error("Attempted to initialize Hazelcast server without selecting a network interface");
+        throw new IllegalArgumentException("No network interface provided: -Daddresses");
     }
 }
