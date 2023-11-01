@@ -16,10 +16,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>17</java.version>
         <slf4j.version>2.0.6</slf4j.version>
-        <grpc.version>1.54.0</grpc.version>
-        <protobuf.version>3.21.7</protobuf.version>
-        <mockito.version>4.11.0</mockito.version>
-        <junit5.version>5.9.1</junit5.version>
         <hazelcast.version>3.6.5</hazelcast.version>
     </properties>
     <dependencyManagement>
@@ -28,33 +24,6 @@
                 <groupId>com.hazelcast</groupId>
                 <artifactId>hazelcast-all</artifactId>
                 <version>${hazelcast.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.grpc</groupId>
-                <artifactId>grpc-netty-shaded</artifactId>
-                <version>${grpc.version}</version>
-                <scope>runtime</scope>
-            </dependency>
-            <dependency>
-                <groupId>io.grpc</groupId>
-                <artifactId>grpc-protobuf</artifactId>
-                <version>${grpc.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.grpc</groupId>
-                <artifactId>grpc-stub</artifactId>
-                <version>${grpc.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.grpc</groupId>
-                <artifactId>grpc-testing</artifactId>
-                <version>${grpc.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>io.grpc</groupId>
-                <artifactId>grpc-services</artifactId>
-                <version>${grpc.version}</version>
             </dependency>
             <dependency> <!-- necessary for Java 9+ -->
                 <groupId>org.apache.tomcat</groupId>
@@ -66,13 +35,6 @@
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-bom</artifactId>
                 <version>2.18.0</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.junit</groupId>
-                <artifactId>junit-bom</artifactId>
-                <version>${junit5.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -101,32 +63,6 @@
             <version>${slf4j.version}</version>
             <scope>runtime</scope>
         </dependency>
-        <!-- BEGIN: TEST -->
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>${junit5.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>${mockito.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <!-- Uses JUnit 4 -->
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-testing</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.vintage</groupId>
-            <artifactId>junit-vintage-engine</artifactId>
-            <version>${junit5.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <!-- END: TEST -->
     </dependencies>
     <build>
         <pluginManagement>
