@@ -6,7 +6,9 @@ import com.hazelcast.core.Hazelcast;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.stream.Collectors;
 
 public class Server {
 
@@ -15,7 +17,7 @@ public class Server {
 
     public static void main(String[] args) {
 
-        String networkInterface = getNetworkInterface(args);
+        String[] networkInterfaces = getNetworkInterface(args);
 
         logger.info("Creating node");
 
@@ -36,7 +38,7 @@ public class Server {
                 .setMulticastConfig(multicastConfig);
 
         InterfacesConfig interfacesConfig = new InterfacesConfig()
-                .setInterfaces(Collections.singletonList(networkInterface))
+                .setInterfaces(Arrays.stream(networkInterfaces).collect(Collectors.toList()))
                 .setEnabled(true);
 
         NetworkConfig networkConfig = new NetworkConfig()
@@ -61,14 +63,14 @@ public class Server {
         logger.info("Node created successfully");
     }
 
-    private static String getNetworkInterface(String[] args) {
+    private static String[] getNetworkInterface(String[] args) {
         for (String arg : args) {
             if (arg.startsWith("-Daddresses=")) {
                 String[] parts = arg.split("=");
                 if(parts.length == 2) {
-                    String ipAddress = parts[1].substring(1, parts[1].length() - 1);
-                    logger.info("Network interface provided:" + ipAddress);
-                    return ipAddress;
+                    String[] ipAddresses = parts[1].substring(1, parts[1].length() - 1).split(";");
+                    logger.info("Network interface provided:" + Arrays.toString(ipAddresses));
+                    return ipAddresses;
                 }
                 break;
             }
