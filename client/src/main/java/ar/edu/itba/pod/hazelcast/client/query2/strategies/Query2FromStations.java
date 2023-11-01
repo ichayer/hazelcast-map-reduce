@@ -1,5 +1,6 @@
 package ar.edu.itba.pod.hazelcast.client.query2.strategies;
 
+import ar.edu.itba.pod.hazelcast.api.combiners.StationsSortedByDistanceCombinerFactory;
 import ar.edu.itba.pod.hazelcast.api.mappers.StationToDistanceMapper;
 import ar.edu.itba.pod.hazelcast.api.models.Station;
 import ar.edu.itba.pod.hazelcast.api.models.StationAndDistance;
@@ -73,6 +74,7 @@ public class Query2FromStations extends BaseStrategy {
 
         final ICompletableFuture<Map<String, ArrayList<StationAndDistance>>> future = job
                 .mapper(new StationToDistanceMapper(STATIONS_MAP_NAME, TRIPS_MULTIMAP_NAME))
+                .combiner(new StationsSortedByDistanceCombinerFactory(limit))
                 .reducer(new StationsSortedByDistanceReducerFactory(limit))
                 .submit();
 
