@@ -13,12 +13,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TripEndMapper implements Mapper<Integer, String, Integer, AffluxCount>, HazelcastInstanceAware {
-
     private String tripsByOriginMapName;
     private String tripsByDestinationMapName;
 
-    private MultiMap<Integer, Trip> tripsByOrigin;
-    private MultiMap<Integer, Trip> tripsByDestination;
+    private transient MultiMap<Integer, Trip> tripsByOrigin;
+    private transient MultiMap<Integer, Trip> tripsByDestination;
 
     public TripEndMapper() {
 

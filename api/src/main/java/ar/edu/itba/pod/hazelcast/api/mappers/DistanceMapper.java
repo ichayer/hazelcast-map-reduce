@@ -10,7 +10,7 @@ import com.hazelcast.mapreduce.Mapper;
 
 public class DistanceMapper implements Mapper<String, Trip, Station, Double>, HazelcastInstanceAware {
     private String mapName;
-    private HazelcastInstance hazelcastInstance;
+    private transient HazelcastInstance hazelcastInstance;
 
     public DistanceMapper(String mapName) {
         this.mapName = mapName;

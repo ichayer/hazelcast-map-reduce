@@ -16,8 +16,8 @@ import java.util.Collection;
 public class StationToDistanceMapper implements Mapper<Integer, Station, String, ArrayList<StationAndDistance>>, HazelcastInstanceAware {
     private String tripsMultiMapName;
     private String stationsMapName;
-    private MultiMap<Integer, Trip> tripsMap;
-    private IMap<Integer, Station> stationsMap;
+    private transient MultiMap<Integer, Trip> tripsMap;
+    private transient IMap<Integer, Station> stationsMap;
 
     public StationToDistanceMapper(String stationsMapName, String tripsMultiMapName) {
         this.stationsMapName = stationsMapName;
