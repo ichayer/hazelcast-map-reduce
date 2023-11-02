@@ -79,9 +79,6 @@ public class Query2Default extends BaseStrategy {
                 .reducer(new AverageDistanceReducerFactory())
                 .submit(new AverageDistanceSubmitter(limit, stationId -> stationMap.get(stationId).getName()));
 
-        // TODO: Consider doing another strategy where instead of finding the top 10 via a submitter, the results of
-        // the map are re-loaded into a distributed map and a second mapreduce operation finds the top N
-
         return future.get();
     }
 }

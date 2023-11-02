@@ -35,8 +35,8 @@ public class Query1FromStations extends BaseStrategy {
     private static final String STATIONS_MAP_NAME = COLLECTION_PREFIX + "stations";
     private static final String TRIPS_MAP_NAME = COLLECTION_PREFIX + "trips";
 
-    private IMap<Integer, String> stationsMap;
-    private MultiMap<Integer, Trip> tripsMap;
+    private transient IMap<Integer, String> stationsMap;
+    private transient MultiMap<Integer, Trip> tripsMap;
 
 
     @Override
