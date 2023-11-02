@@ -18,12 +18,7 @@ public class Arguments {
     private Arguments(Builder builder) {
         this.addresses = builder.addresses;
         this.inPath = builder.inPath;
-
-        String outPath1 = builder.outPath;
-        if (outPath1.endsWith("/"))
-            outPath1 = outPath1.substring(0, outPath1.length() - 1);
-        this.outPath = outPath1;
-
+        String outPath = builder.outPath;
         this.startDate = builder.startDate;
         this.endDate = builder.endDate;
         this.limit = builder.limit;
@@ -37,6 +32,11 @@ public class Arguments {
         if (addresses == null || addresses.length == 0 || inPath == null || outPath == null) {
             throw new IllegalClientArgumentException("The parameters -Daddresses, -DinPath and -DoutPath must be provided");
         }
+
+        if (outPath.endsWith("/")) {
+            outPath = outPath.substring(0, outPath.length() - 1);
+        }
+        this.outPath = outPath;
     }
 
     public String[] getAddresses() {
