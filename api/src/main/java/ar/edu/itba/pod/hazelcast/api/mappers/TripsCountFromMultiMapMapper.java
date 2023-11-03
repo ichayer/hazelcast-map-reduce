@@ -30,13 +30,12 @@ public class TripsCountFromMultiMapMapper implements Mapper<Integer, String, Map
     public void map(Integer stationId, String stationName, Context<Map.Entry<Integer, Integer>, Integer> context) {
         Collection<Trip> tripsStartingFromThatStation = tripsMap.get(stationId);
 
-        Map<Trip, Integer> elementCounts = tripsStartingFromThatStation.stream()
-                .collect(Collectors.groupingBy(e -> e, Collectors.summingInt(n->1)));
+        Map<Integer, Integer> elementCounts = tripsStartingFromThatStation.stream()
+                .collect(Collectors.groupingBy(Trip::getDestination, Collectors.summingInt(n->1)));
 
-        for (Map.Entry<Trip, Integer> entry : elementCounts.entrySet()) {
-            Integer destinationId = entry.getKey().getDestination();
+        for (Map.Entry<Integer, Integer> entry : elementCounts.entrySet()) {
+            Integer destinationId = entry.getKey();
             Integer count = entry.getValue();
-            System.out.println("kk " + destinationId + " e " + count);
             context.emit(new AbstractMap.SimpleEntry<>(stationId, destinationId), count);
         }
     }
