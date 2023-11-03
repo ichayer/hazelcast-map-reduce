@@ -36,7 +36,6 @@ public class TripsCountFromMultiMapMapper implements Mapper<Integer, String, Map
         for (Map.Entry<Trip, Integer> entry : elementCounts.entrySet()) {
             Integer destinationId = entry.getKey().getDestination();
             Integer count = entry.getValue();
-            System.out.println("kk " + destinationId + " e " + count);
             context.emit(new AbstractMap.SimpleEntry<>(stationId, destinationId), count);
         }
     }
