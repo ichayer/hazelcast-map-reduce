@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 public class TripsCountFromMultiMapMapper implements Mapper<Integer, String, Map.Entry<Integer, Integer>, Integer>, HazelcastInstanceAware {
     private final String tripsMultiMapName;
-    private MultiMap<Integer, Trip> tripsMap;
+    private transient MultiMap<Integer, Trip> tripsMap;
 
     public TripsCountFromMultiMapMapper(String tripsMultiMapName) {
         this.tripsMultiMapName = tripsMultiMapName;
